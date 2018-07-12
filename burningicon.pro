@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui xml svg
+QT       += core gui xml
 QT       += winextras
 win32:RC_FILE = icon.rc
 

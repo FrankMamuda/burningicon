@@ -20,13 +20,11 @@
 // TODO:
 //
 //  progressbar and QtConcurrent
-//  app icon (ironic - it could generate icons for others but for himself)
 //  aliasing layers
 //  disabling layers
 //  generic icon creation
 //  project save/load
 //  reset custom layer scales
-//  app icon
 //  icon crop dialog
 //  platform independant code
 //  icon resource export
@@ -138,12 +136,16 @@ void MainWindow::initialize() {
 
         // pre-render svs to maximum scale (ignores aspect ratio)
         if ( fileName.endsWith( ".svg" )) {
-            QSvgRenderer renderer( fileName );
-            QPixmap pm( Ui::MaximumScale, Ui::MaximumScale );
-            pm.fill( Qt::transparent );
-            QPainter painter( &pm );
-            renderer.render( &painter, pm.rect());
-            pixmap = pm;
+            QIcon icon;
+
+            icon.addFile( fileName, QSize( Ui::MaximumScale, Ui::MaximumScale ));
+            if ( icon.isNull()) {
+                QMessageBox::critical( this, this->tr( "Image selector" ),
+                                       this->tr( "Invalid svg. Try another one." ),
+                                       QMessageBox::Ok );
+            }
+
+            pixmap = icon.pixmap( Ui::MaximumScale, Ui::MaximumScale );
         } else {
             // validate pixmap
             if ( !pixmap.load( fileName ))
