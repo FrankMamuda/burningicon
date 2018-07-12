@@ -1,0 +1,2 @@
+# burningicon
+Windows icon generator
