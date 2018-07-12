@@ -16,7 +16,7 @@
    id="svg8"
    sodipodi:docname="app.svg"
    inkscape:version="0.92.2 (5c3e80d, 2017-08-06)"
-   inkscape:export-filename="C:\Private\Devel\BurningIcon\icons\app.png"
+   inkscape:export-filename="C:\Private\Devel\burningicon\icons\app.png"
    inkscape:export-xdpi="384.00003"
    inkscape:export-ydpi="384.00003">
   <defs
@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="22.4"
-     inkscape:cx="2.8837501"
-     inkscape:cy="13.101232"
+     inkscape:zoom="15.839192"
+     inkscape:cx="3.5497222"
+     inkscape:cy="0.96409304"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -58,7 +58,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -67,16 +67,36 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-292.76664)">
+    <ellipse
+       style="opacity:1;fill:#b90000;fill-opacity:1;stroke:none;stroke-width:0.33693835;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="path824"
+       cx="2.0881448"
+       cy="294.88861"
+       rx="1.6885854"
+       ry="1.6848166" />
     <path
-       style="fill:#000000;fill-opacity:0;stroke:#c00000;stroke-width:0.22061554;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="m 1.096469,295.56171 c 0,0 -0.16903416,-0.29547 0.082418,-0.67478 0.2514525,-0.3793 0.3869723,-0.46933 0.3740656,-0.82854 -0.012906,-0.35921 0.1968262,0.2305 0.1903728,0.35921 -0.00645,0.12871 -0.016133,0.35323 0.1581062,-0.012 0.1742396,-0.36519 -0.1724077,-0.9493 -0.3136831,-1.03591 -0.1412757,-0.0866 0.08459,-0.0515 0.3104564,0.069 0.2258662,0.12062 0.7873047,0.6671 0.8260246,1.15246 0.038719,0.48538 -0.00323,0.71543 -0.00323,0.71543 0,0 0.2503029,-0.0404 0.29776,-0.60935 0.047457,-0.56896 0.2774417,0.62652 0.1387206,0.83819"
-       id="path2005"
+       style="opacity:1;fill:#7f7676;fill-opacity:1;stroke:none;stroke-width:0.33693835;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 2.1383743,293.20383 a 1.6885854,1.6848166 0 0 0 -1.68878565,1.68516 1.6885854,1.6848166 0 0 0 0.47904025,1.17461 l 0.6614583,-0.77618 0.047543,-0.40411 0.2480468,0.40411 0.00568,0.26458 0.2361613,-0.43821 -0.2418457,-0.62012 -0.271818,-0.26458 0.622701,0.12299 0.79375,0.93534 v 0.79375 l 0.1012858,0.11317 0.2304769,-0.37775 0.077515,-0.6687 0.2883545,0.30231 a 1.6885854,1.6848166 0 0 0 0.098702,-0.56121 1.6885854,1.6848166 0 0 0 -1.688269,-1.68516 z"
+       id="path824-6"
        inkscape:connector-curvature="0" />
     <path
-       style="fill:none;fill-opacity:1;stroke:#404040;stroke-width:0.26499999;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="m 1.0583334,295.14789 c 0.7381484,0.3614 1.4545198,0.48132 2.1166666,0 v 1.32292 H 1.0583334 v -1.32292"
-       id="path1958"
+       style="fill:none;fill-opacity:1;stroke:#ffffff;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 0.86343943,296.08102 0.67681357,-0.79375 0.047247,-0.40396 0.2480469,0.40396 0.00591,0.26458 0.2362351,-0.43821 -0.242141,-0.62012 -0.2716704,-0.26458 0.6224795,0.12284 0.79375,0.93549 v 0.79375 l 0.101581,0.1134 0.2303293,-0.37798 0.07737,-0.66855 0.3147763,0.33029"
+       id="path1984"
        inkscape:connector-curvature="0"
-       sodipodi:nodetypes="ccccc" />
+       sodipodi:nodetypes="ccccccccccccccc" />
+    <path
+       style="fill:none;fill-opacity:1;stroke:#ffffff;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
+       d="m 1.9595703,296.58302 0.4216797,-0.64138 0.1724516,0.72288"
+       id="path1986"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccc" />
+    <ellipse
+       style="opacity:1;fill:none;fill-opacity:1;stroke:#404040;stroke-width:0.33693835;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="path824-1"
+       cx="2.1542904"
+       cy="294.95239"
+       rx="1.6885854"
+       ry="1.6848166" />
   </g>
 </svg>

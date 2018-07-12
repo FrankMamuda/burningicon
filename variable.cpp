@@ -25,7 +25,6 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include <QSpinBox>
-#include <QDebug>
 #include <QLineEdit>
 #include <QTimeEdit>
 #include <QAction>

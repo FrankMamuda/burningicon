@@ -164,7 +164,14 @@ void MainWindow::initialize() {
     };
 
     // check button state on index change (disable by default)
-    this->connect( this->ui->layerView->selectionModel(), &QItemSelectionModel::selectionChanged, [ this, buttonTest ]() { buttonTest(); } );
+    this->connect( this->ui->layerView->selectionModel(), &QItemSelectionModel::selectionChanged, [ this, buttonTest ]() {
+        buttonTest();
+
+        if ( !this->layers.isEmpty())
+            this->ui->pixmapLabel->setPixmap( this->layers.at( this->ui->layerView->currentIndex().row())->pixmap );
+        else
+            this->ui->pixmapLabel->setPixmap( QPixmap());
+    } );
     buttonTest();
 
     // add new layer lambda
@@ -260,7 +267,9 @@ void MainWindow::initialize() {
         this->generateLayers( this->settingsDialog->currentScales());
 
         // update pixmap and display its scale
-        this->ui->pixmapLabel->setPixmap( this->scaled );
+        if ( !this->layers.isEmpty())
+            this->ui->pixmapLabel->setPixmap( this->layers.first()->pixmap );
+
         this->ui->stackedWidget->setCurrentIndex( Preview );
     } );
 
@@ -291,7 +300,7 @@ MainWindow::~MainWindow() {
  * @brief MainWindow::on_actionExport_triggered
  */
 void MainWindow::on_actionExport_triggered() {
-    const QPixmap *pixmap( this->ui->pixmapLabel->pixmap());
+    const QPixmap *pixmap( &this->scaled );
     bool ok = true;
     QString path( Variable::instance()->string( "previousSavePath" ));
     const QDir dir( path );

@@ -19,7 +19,6 @@
 //
 // includes
 //
-#include <QDebug>
 #include "xmltools.h"
 #include "variable.h"
 #include <QBuffer>
