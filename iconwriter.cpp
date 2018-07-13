@@ -22,6 +22,7 @@
 #include "iconwriter.h"
 #include <QBuffer>
 #include <QFile>
+#include <QDebug>
 
 /**
  * @brief IconWriter::write
@@ -67,11 +68,11 @@ void IconWriter::write( const QString &filename, const QList<Layer*> pixmaps ) {
  * @param pixmap
  */
 void IconWriter::writeData( QDataStream &out, const QPixmap &pixmap ) {
-    int y, x, k;
+    int y, x;
     const QImage image( pixmap.toImage());
 
     for ( y = 0; y < image.height(); y++ ) {
-        int pad = 0;
+        //int padSize = 0;
 
         for ( x = 0; x < image.width(); x++ ) {
             QColor colour( image.pixelColor( x, image.height() - y - 1 ));
@@ -84,13 +85,6 @@ void IconWriter::writeData( QDataStream &out, const QPixmap &pixmap ) {
             };
             out.writeRawData( pixel, 4 );
         }
-
-        // add padding
-        if (( pixmap.width() * 3 ) % 4 != 0 )
-            pad = 4 - (( pixmap.width() * 3 ) % 4 );
-
-        for ( k = 0; k < pad; k++ )
-            out.writeRawData( 0, sizeof( qint8 ));
     }
 }
 
@@ -106,19 +100,10 @@ IcoDirectory IconWriter::writeIconData( Layer *layer, QDataStream &out, qint64 p
     IcoDirectory dir;
 
     if ( !layer->isCompressed()) {
-        // pixmap size lambda
-        auto getPixmapSize = []( const QPixmap &pixmap ) {
-            int pad = 0;
-            if (( pixmap.width() * 3 ) % 4 != 0 )
-                pad = 4 - (( pixmap.width() * 3 ) % 4 );
-
-            return ( pixmap.width() + pad ) * pixmap.height() * 4;
-        };
-
         // generate header
         header.width = pixmap.width();
         header.height = pixmap.height() * 2;
-        header.imageSize = static_cast<quint32>( getPixmapSize( pixmap ));
+        header.imageSize = static_cast<quint32>( pixmap.width() * pixmap.height() * 4 );
 
         // write header
         out << header;
@@ -127,7 +112,7 @@ IcoDirectory IconWriter::writeIconData( Layer *layer, QDataStream &out, qint64 p
         this->writeData( out, pixmap );
     } else {
         QByteArray bytes;
-        QBuffer buffer(&bytes);
+        QBuffer buffer( &bytes );
         buffer.open( QIODevice::WriteOnly );
         pixmap.save( &buffer, "PNG" );
         out.writeRawData( bytes, bytes.size());

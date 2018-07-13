@@ -37,9 +37,15 @@ class Layer;
 namespace Ui {
 class MainWindow;
 const static QList<int> DefaultScales = QList<int>() << 16 << 32 << 48 << 256;
+#ifndef Q_CC_MSVC
 constexpr int __attribute__((unused)) MinimumScale = 4;
 constexpr int __attribute__((unused)) ThresholdScale = 256;
 constexpr int __attribute__((unused)) MaximumScale = 512;
+#else
+constexpr int MinimumScale = 4;
+constexpr int ThresholdScale = 256;
+constexpr int MaximumScale = 512;
+#endif
 }
 
 /**

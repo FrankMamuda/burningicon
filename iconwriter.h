@@ -30,18 +30,22 @@
 /**
  * @brief The IcoHeader struct
  */
+#pragma pack(push,1)
 struct IcoHeader {
     quint16 zero;
     quint16 one;
     quint16 numIcons;
     IcoHeader( quint16 n = 0 ) : zero( 0 ), one( 1 ), numIcons( n ) {}
 };
+#pragma pack(pop)
+
 Q_DECLARE_METATYPE( IcoHeader )
 inline static QDataStream &operator<<( QDataStream &out, const IcoHeader &h ) { out << h.zero << h.one << h.numIcons; return out; }
 
 /**
  * @brief The IcoDirectory struct
  */
+#pragma pack(push,1)
 struct IcoDirectory {
     quint8 width;
     quint8 height;
@@ -53,12 +57,15 @@ struct IcoDirectory {
     quint32 offset;
     IcoDirectory() : width( 0 ), height( 0 ), numColours( 0 ), zero( 0 ), planes( 1 ), depth( 32 ), bytes( 0 ), offset( 0 ) {}
 };
+#pragma pack(pop)
+
 Q_DECLARE_METATYPE( IcoDirectory )
 inline static QDataStream &operator<<( QDataStream &out, const IcoDirectory &d ) { out << d.width << d.height << d.numColours << d.zero << d.planes << d.depth << d.bytes << d.offset; return out; }
 
 /**
  * @brief The BitmapHeader struct
  */
+#pragma pack(push,1)
 struct BitmapHeader {
     quint32 headerSize;
     qint32 width;
@@ -73,6 +80,8 @@ struct BitmapHeader {
     quint32 indexes;
     BitmapHeader() : headerSize( 40 ), width( 0 ), height( 0 ), planes( 1 ), depth( 32 ), compression( 0 ), imageSize( 0 ), xpm( 0 ), ypm( 0 ), numColors( 0 ), indexes( 0 ) { }
 };
+#pragma pack(pop)
+
 inline static QDataStream &operator<<( QDataStream &out, const BitmapHeader &b ) { out << b.headerSize << b.width << b.height << b.planes << b.depth << b.compression << b.imageSize << b.xpm << b.ypm << b.numColors << b.indexes; return out; }
 
 

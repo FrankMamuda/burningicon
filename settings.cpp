@@ -44,11 +44,11 @@ Settings::Settings( QWidget *parent ) : QDialog( parent ), ui( new Ui::Settings 
     }
 
     // fill out templates
-    this->layerTemplates[Legacy]    = LayerTemplate( this->tr( "Classic/legacy" ),
+    this->layerTemplates[Legacy]    = LayerTemplate( this->tr( "Windows XP" ),
                                                      QList<int>() << 16 << 32 << 48 );
     this->layerTemplates[Windows7]  = LayerTemplate( this->tr( "Windows Vista/7" ),
                                                      QList<int>() << 16 << 20 << 32 << 40 << 48 << 64 << 256 );
-    this->layerTemplates[Windows10] = LayerTemplate( this->tr( "Windows Vista10" ),
+    this->layerTemplates[Windows10] = LayerTemplate( this->tr( "Windows 10" ),
                                                      QList<int>() << 16 << 20 << 24 << 28 << 30 << 31 << 32 << 40 << 42 << 47 << 48 << 56 << 60 << 63 << 84 << 256 );
     this->layerTemplates[Custom]    = LayerTemplate( this->tr( "Custom" ),
                                                      customValues );
