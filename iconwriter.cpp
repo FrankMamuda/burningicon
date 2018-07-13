@@ -72,6 +72,8 @@ void IconWriter::writeData( QDataStream &out, const QPixmap &pixmap ) {
     const QImage image( pixmap.toImage());
 
     for ( y = 0; y < image.height(); y++ ) {
+        //int padSize = 0;
+
         for ( x = 0; x < image.width(); x++ ) {
             QColor colour( image.pixelColor( x, image.height() - y - 1 ));
 
@@ -91,7 +93,7 @@ void IconWriter::writeData( QDataStream &out, const QPixmap &pixmap ) {
  * @param pixmap
  * @return
  */
-IcoDirectory IconWriter::writeIconData(Layer *layer, QDataStream &out, qint64 pos ) {
+IcoDirectory IconWriter::writeIconData( Layer *layer, QDataStream &out, qint64 pos ) {
     QPixmap pixmap( layer->pixmap );
     BitmapHeader header;
     quint32 imageSize = 0;
@@ -101,7 +103,7 @@ IcoDirectory IconWriter::writeIconData(Layer *layer, QDataStream &out, qint64 po
         // generate header
         header.width = pixmap.width();
         header.height = pixmap.height() * 2;
-        header.imageSize = sizeof( BitmapHeader ) + static_cast<quint32>( pixmap.width() * pixmap.height() * 4 );
+        header.imageSize = static_cast<quint32>( pixmap.width() * pixmap.height() * 4 );
 
         // write header
         out << header;
@@ -121,7 +123,7 @@ IcoDirectory IconWriter::writeIconData(Layer *layer, QDataStream &out, qint64 po
     // generate ico directory
     dir.width = layer->isCompressed() ? 0 : static_cast<quint8>( pixmap.width());
     dir.height = layer->isCompressed() ? 0 : static_cast<quint8>( pixmap.height());
-    dir.bytes = layer->isCompressed() ? imageSize : header.imageSize;
+    dir.bytes = layer->isCompressed() ? imageSize : sizeof( BitmapHeader ) + header.imageSize;
     dir.offset = static_cast<quint32>( pos );
 
     // return directory entry
