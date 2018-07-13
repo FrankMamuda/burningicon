@@ -63,6 +63,9 @@ public:
     void initialize();
     Layer *scaleToLayer( int scale ) const;
 
+public:
+    void setPixmap( const QPixmap &pixmap );
+
 private slots:
     void on_actionExport_triggered();
     void generateLayers( const QList<int> scales = Ui::DefaultScales );
@@ -72,9 +75,7 @@ private slots:
     void removeLayer( int scale );
     void resetModel();
     void clearLayers();
-
     void on_actionClear_triggered();
-
     void on_actionSettings_triggered();
 
 private:

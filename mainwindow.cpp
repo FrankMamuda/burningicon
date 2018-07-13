@@ -38,6 +38,7 @@
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QMessageBox>
+#include <iconmaker.h>
 #include "iconwriter.h"
 #include "layermodel.h"
 #include "main.h"
@@ -71,6 +72,34 @@ Layer *MainWindow::scaleToLayer( int scale ) const {
         layer = this->layerMap[scale];
 
     return layer;
+}
+
+/**
+ * @brief MainWindow::setPixmap
+ * @param pixmap
+ */
+void MainWindow::setPixmap( const QPixmap &px ) {
+    QPixmap pixmap( px );
+
+    // resize if larger than 512
+    if ( pixmap.width() > Ui::MaximumScale || pixmap.height() > Ui::MaximumScale ) {
+        if ( pixmap.width() > pixmap.height())
+            pixmap = pixmap.scaledToHeight( Ui::MaximumScale, Qt::SmoothTransformation );
+        else if ( pixmap.width() < pixmap.height())
+            pixmap = pixmap.scaledToWidth( Ui::MaximumScale, Qt::SmoothTransformation );
+        else
+            pixmap = pixmap.scaled( Ui::MaximumScale, Ui::MaximumScale, Qt::IgnoreAspectRatio, Qt::SmoothTransformation );
+    }
+    this->scaled = pixmap;
+
+    // generate mipmaps
+    this->generateLayers( this->settingsDialog->currentScales());
+
+    // update pixmap and display its scale
+    if ( !this->layers.isEmpty())
+        this->ui->pixmapLabel->setPixmap( this->layers.last()->pixmap );
+
+    this->ui->stackedWidget->setCurrentIndex( Preview );
 }
 
 /**
@@ -252,25 +281,15 @@ void MainWindow::initialize() {
         if ( !ok )
             return;
 
-        // resize if larger than 512
-        if ( pixmap.width() > Ui::MaximumScale || pixmap.height() > Ui::MaximumScale ) {
-            if ( pixmap.width() > pixmap.height())
-                pixmap = pixmap.scaledToHeight( Ui::MaximumScale, Qt::SmoothTransformation );
-            else if ( pixmap.width() < pixmap.height())
-                pixmap = pixmap.scaledToWidth( Ui::MaximumScale, Qt::SmoothTransformation );
-            else
-                pixmap = pixmap.scaled( Ui::MaximumScale, Ui::MaximumScale, Qt::IgnoreAspectRatio, Qt::SmoothTransformation );
-        }
-        this->scaled = pixmap;
+        // make mipMaps
+        this->setPixmap( pixmap );
+    } );
 
-        // generate mipmaps
-        this->generateLayers( this->settingsDialog->currentScales());
-
-        // update pixmap and display its scale
-        if ( !this->layers.isEmpty())
-            this->ui->pixmapLabel->setPixmap( this->layers.first()->pixmap );
-
-        this->ui->stackedWidget->setCurrentIndex( Preview );
+    // icon maker lambda
+    this->connect( this->ui->makeButton, &QPushButton::clicked, [ this ]() {
+        IconMaker *maker = new IconMaker;
+        maker->setAttribute( Qt::WA_DeleteOnClose, true );
+        maker->show();
     } );
 
     // add to garbage man
@@ -284,6 +303,7 @@ MainWindow::~MainWindow() {
     this->clearLayers();
 
     // disconnect all lambdas, etc.
+    this->disconnect( this->ui->makeButton, SLOT( clicked()));
     this->disconnect( this->ui->openButton, SLOT( clicked()));
     this->disconnect( this->ui->addButton, SLOT( clicked()));
     this->disconnect( this->ui->removeButton, SLOT( clicked()));

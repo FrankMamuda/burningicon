@@ -11,5 +11,6 @@
         <file alias="settings">icons/settings.png</file>
         <file alias="layers">icons/layers.png</file>
         <file alias="app">icons/app.png</file>
+        <file alias="colour">icons/colour.png</file>
     </qresource>
 </RCC>

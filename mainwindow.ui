@@ -105,6 +105,17 @@
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QPushButton" name="makeButton">
+          <property name="text">
+           <string>Make a generic icon (experimental)</string>
+          </property>
+          <property name="icon">
+           <iconset resource="resources.qrc">
+            <normaloff>:/icons/image</normaloff>:/icons/image</iconset>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
      </widget>
