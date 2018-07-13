@@ -26,7 +26,6 @@
 //  project save/load
 //  reset custom layer scales
 //  icon crop dialog
-//  platform independant code
 //  icon resource export
 //
 
@@ -39,7 +38,6 @@
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QMessageBox>
-#include <QSvgRenderer>
 #include "iconwriter.h"
 #include "layermodel.h"
 #include "main.h"

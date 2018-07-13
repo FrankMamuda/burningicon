@@ -51,7 +51,7 @@ struct IcoDirectory {
     quint16 depth;
     quint32 bytes;
     quint32 offset;
-    IcoDirectory() : width( 0 ), height( 0 ), numColours( 0 ), zero( 0 ), planes( 0 ), depth( 0), bytes( 0 ), offset( 0 ) {}
+    IcoDirectory() : width( 0 ), height( 0 ), numColours( 0 ), zero( 0 ), planes( 1 ), depth( 32 ), bytes( 0 ), offset( 0 ) {}
 };
 Q_DECLARE_METATYPE( IcoDirectory )
 inline static QDataStream &operator<<( QDataStream &out, const IcoDirectory &d ) { out << d.width << d.height << d.numColours << d.zero << d.planes << d.depth << d.bytes << d.offset; return out; }
@@ -71,7 +71,7 @@ struct BitmapHeader {
     qint32 ypm;
     quint32 numColors;
     quint32 indexes;
-    BitmapHeader() : headerSize( 40 ), width( 0 ), height( 0 ), planes( 1 ), depth( 0 ), compression( 0 ), imageSize( 0 ), xpm( 0 ), ypm( 0 ), numColors( 0 ), indexes( 0 ) { }
+    BitmapHeader() : headerSize( 40 ), width( 0 ), height( 0 ), planes( 1 ), depth( 32 ), compression( 0 ), imageSize( 0 ), xpm( 0 ), ypm( 0 ), numColors( 0 ), indexes( 0 ) { }
 };
 inline static QDataStream &operator<<( QDataStream &out, const BitmapHeader &b ) { out << b.headerSize << b.width << b.height << b.planes << b.depth << b.compression << b.imageSize << b.xpm << b.ypm << b.numColors << b.indexes; return out; }
 
@@ -91,6 +91,6 @@ public:
 private:
     unsigned int getBitmapSize( const BITMAP &bitmap );
     IcoDirectory writeIconData( Layer *layer, QDataStream &out, qint64 pos );
-    void writeData( QDataStream &out, const HBITMAP &handle );
+    void writeData( QDataStream &out, const QPixmap &pixmap );
     IconWriter() { GarbageMan::instance()->add( this ); }
 };

@@ -22,21 +22,6 @@
 #include "iconwriter.h"
 #include <QBuffer>
 #include <QFile>
-#include <QtWin>
-
-/**
- * @brief IconWriter::getBitmapSize
- * @param bitmap
- * @return
- */
-unsigned int IconWriter::getBitmapSize( const BITMAP &bitmap ) {
-    int size = bitmap.bmWidthBytes;
-
-    if ( size & 3 )
-        size = ( size + 4 ) & ~3;
-
-    return static_cast<unsigned int>( size * bitmap.bmHeight );
-}
 
 /**
  * @brief IconWriter::write
@@ -79,33 +64,34 @@ void IconWriter::write( const QString &filename, const QList<Layer*> pixmaps ) {
 /**
  * @brief IconWriter::writeData
  * @param out
- * @param handle
+ * @param pixmap
  */
-void IconWriter::writeData( QDataStream &out, const HBITMAP &handle ) {
-    BITMAP bitmap;
-    int y, k;
-    unsigned char *data;
-    unsigned int iconSize;
+void IconWriter::writeData( QDataStream &out, const QPixmap &pixmap ) {
+    int y, x, k;
+    const QImage image( pixmap.toImage());
 
-    // get bitmap
-    GetObject( handle, sizeof( BITMAP ), &bitmap );
-    iconSize = this->getBitmapSize( bitmap );
-    data = new unsigned char[iconSize];
-    GetBitmapBits( handle, static_cast<int>( iconSize ), data );
+    for ( y = 0; y < image.height(); y++ ) {
+        int pad = 0;
 
-    // generate image buffer
-    for ( y = bitmap.bmHeight - 1; y >= 0; y-- ) {
-        // write scanline
-        out.writeRawData( reinterpret_cast<const char*>( data + ( y * bitmap.bmWidthBytes )), bitmap.bmWidthBytes );
+        for ( x = 0; x < image.width(); x++ ) {
+            QColor colour( image.pixelColor( x, image.height() - y - 1 ));
+
+            const char pixel[4] = {
+                static_cast<char>( colour.blue()),
+                static_cast<char>( colour.green()),
+                static_cast<char>( colour.red()),
+                static_cast<char>( colour.alpha())
+            };
+            out.writeRawData( pixel, 4 );
+        }
 
         // add padding
-        if ( bitmap.bmWidthBytes & 3 ) {
-            for ( k = 0; k < 4 - bitmap.bmWidthBytes; k++ )
-                out << static_cast<qint8>( 0 );
-        }
-    }
+        if (( pixmap.width() * 3 ) % 4 != 0 )
+            pad = 4 - (( pixmap.width() * 3 ) % 4 );
 
-    delete data;
+        for ( k = 0; k < pad; k++ )
+            out.writeRawData( 0, sizeof( qint8 ));
+    }
 }
 
 /**
@@ -114,36 +100,31 @@ void IconWriter::writeData( QDataStream &out, const HBITMAP &handle ) {
  * @return
  */
 IcoDirectory IconWriter::writeIconData( Layer *layer, QDataStream &out, qint64 pos ) {
-    ICONINFO iconInfo;
     QPixmap pixmap( layer->pixmap );
-    HICON icon = QtWin::toHICON( pixmap );
-    BITMAP bitmap, mask;
     BitmapHeader header;
     quint32 imageSize = 0;
     IcoDirectory dir;
 
     if ( !layer->isCompressed()) {
-        if( !GetIconInfo( icon, &iconInfo ))
-            return dir;
+        // pixmap size lambda
+        auto getPixmapSize = []( const QPixmap &pixmap ) {
+            int pad = 0;
+            if (( pixmap.width() * 3 ) % 4 != 0 )
+                pad = 4 - (( pixmap.width() * 3 ) % 4 );
 
-        if( !GetObject( iconInfo.hbmColor, sizeof( BITMAP ), &bitmap ) || !GetObject( iconInfo.hbmMask, sizeof( BITMAP ), &mask ))
-            return dir;
+            return ( pixmap.width() + pad ) * pixmap.height() * 4;
+        };
 
         // generate header
-
-        imageSize = this->getBitmapSize( bitmap ) + this->getBitmapSize( mask );
-        header.width = bitmap.bmWidth;
-        header.height = bitmap.bmHeight * 2;
-        header.planes = bitmap.bmPlanes;
-        header.depth = bitmap.bmBitsPixel;
-        header.imageSize = imageSize;
+        header.width = pixmap.width();
+        header.height = pixmap.height() * 2;
+        header.imageSize = static_cast<quint32>( getPixmapSize( pixmap ));
 
         // write header
         out << header;
 
-        // write bitmap data
-        this->writeData( out, iconInfo.hbmColor );
-        this->writeData( out, iconInfo.hbmMask );
+        // write pixmap data
+        this->writeData( out, pixmap );
     } else {
         QByteArray bytes;
         QBuffer buffer(&bytes);
@@ -155,17 +136,10 @@ IcoDirectory IconWriter::writeIconData( Layer *layer, QDataStream &out, qint64 p
     }
 
     // generate ico directory
-    dir.width = layer->isCompressed() ? 0 : static_cast<quint8>( bitmap.bmWidth );
-    dir.height = layer->isCompressed() ? 0 : static_cast<quint8>( bitmap.bmHeight );
-    dir.numColours = layer->isCompressed() ? 0 : ( bitmap.bmBitsPixel >= 8 ? 0 : static_cast<quint8>( 1 << ( bitmap.bmBitsPixel * bitmap.bmPlanes )));
-    dir.planes = layer->isCompressed() ? 1 : bitmap.bmPlanes;
-    dir.depth = layer->isCompressed() ? static_cast<quint16>( pixmap.depth()) : bitmap.bmBitsPixel;
-    dir.bytes = layer->isCompressed() ? imageSize : sizeof( BITMAPINFOHEADER ) + imageSize;
+    dir.width = layer->isCompressed() ? 0 : static_cast<quint8>( pixmap.width());
+    dir.height = layer->isCompressed() ? 0 : static_cast<quint8>( pixmap.height());
+    dir.bytes = layer->isCompressed() ? imageSize : sizeof( BITMAPINFOHEADER ) + header.imageSize;
     dir.offset = static_cast<quint32>( pos );
-
-    // delete bitmaps
-    DeleteObject( iconInfo.hbmColor );
-    DeleteObject( iconInfo.hbmMask );
 
     // return directory entry
     return dir;

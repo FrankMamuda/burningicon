@@ -5,7 +5,6 @@
 #-------------------------------------------------
 
 QT       += core gui xml
-QT       += winextras
 win32:RC_FILE = icon.rc
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -52,8 +51,6 @@ FORMS += \
     settings.ui
 
 DISTFILES +=
-
-win32:LIBS += -luser32 -lgdi32
 
 RESOURCES += \
     resources.qrc
