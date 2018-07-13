@@ -123,7 +123,7 @@ IcoDirectory IconWriter::writeIconData( Layer *layer, QDataStream &out, qint64 p
     // generate ico directory
     dir.width = layer->isCompressed() ? 0 : static_cast<quint8>( pixmap.width());
     dir.height = layer->isCompressed() ? 0 : static_cast<quint8>( pixmap.height());
-    dir.bytes = layer->isCompressed() ? imageSize : sizeof( BITMAPINFOHEADER ) + header.imageSize;
+    dir.bytes = layer->isCompressed() ? imageSize : sizeof( BitmapHeader ) + header.imageSize;
     dir.offset = static_cast<quint32>( pos );
 
     // return directory entry

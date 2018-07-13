@@ -24,7 +24,6 @@
 #include <QDataStream>
 #include <QPixmap>
 #include "layer.h"
-#include "windows.h"
 #include "main.h"
 
 /**
@@ -98,7 +97,6 @@ public:
     void write( const QString &filename, const QList<Layer*> pixmaps );
 
 private:
-    unsigned int getBitmapSize( const BITMAP &bitmap );
     IcoDirectory writeIconData( Layer *layer, QDataStream &out, qint64 pos );
     void writeData( QDataStream &out, const QPixmap &pixmap );
     IconWriter() { GarbageMan::instance()->add( this ); }
