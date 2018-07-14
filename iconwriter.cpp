@@ -69,13 +69,13 @@ void IconWriter::write( const QString &filename, const QList<Layer*> pixmaps ) {
  */
 void IconWriter::writeData( QDataStream &out, const QPixmap &pixmap ) {
     int y, x;
-    const QImage image( pixmap.toImage());
+    QImage image( pixmap.toImage());
 
     for ( y = 0; y < image.height(); y++ ) {
         //int padSize = 0;
 
         for ( x = 0; x < image.width(); x++ ) {
-            QColor colour( image.pixelColor( x, image.height() - y - 1 ));
+            const QColor colour( image.pixelColor( x, image.height() - y - 1 ));
 
             const char pixel[4] = {
                 static_cast<char>( colour.blue()),
@@ -85,6 +85,13 @@ void IconWriter::writeData( QDataStream &out, const QPixmap &pixmap ) {
             };
             out.writeRawData( pixel, 4 );
         }
+    }
+
+    // write mask
+    image = image.createAlphaMask();
+    for ( y = image.height() - 1; y >= 0; y-- ) {
+        for ( x = 0; x < image.bytesPerLine(); x++ )
+            out << image.scanLine( y * image.bytesPerLine() + x );
     }
 }
 
@@ -103,7 +110,7 @@ IcoDirectory IconWriter::writeIconData( Layer *layer, QDataStream &out, qint64 p
         // generate header
         header.width = pixmap.width();
         header.height = pixmap.height() * 2;
-        header.imageSize = static_cast<quint32>( pixmap.width() * pixmap.height() * 4 );
+        header.imageSize = static_cast<quint32>( pixmap.width() * pixmap.height() * 4 ) + static_cast<quint32>( pixmap.toImage().createAlphaMask().bytesPerLine() * pixmap.height());
 
         // write header
         out << header;
