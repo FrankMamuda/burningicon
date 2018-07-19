@@ -70,10 +70,9 @@ void IconWriter::write( const QString &filename, const QList<Layer*> pixmaps ) {
 void IconWriter::writeData( QDataStream &out, const QPixmap &pixmap ) {
     int y, x;
     QImage image( pixmap.toImage());
+    image = image.convertToFormat( QImage::Format_ARGB32 );
 
     for ( y = 0; y < image.height(); y++ ) {
-        //int padSize = 0;
-
         for ( x = 0; x < image.width(); x++ ) {
             const QColor colour( image.pixelColor( x, image.height() - y - 1 ));
 
@@ -88,10 +87,27 @@ void IconWriter::writeData( QDataStream &out, const QPixmap &pixmap ) {
     }
 
     // write mask
-    image = image.createAlphaMask();
-    for ( y = image.height() - 1; y >= 0; y-- ) {
-        for ( x = 0; x < image.bytesPerLine(); x++ )
-            out << image.scanLine( y * image.bytesPerLine() + x );
+    auto bytesPerLine = []( int width ) { return width % 32 ? ( width / 32 + 1 ) * 4 : width / 8; };
+    const unsigned long lineSize = static_cast<unsigned long>( bytesPerLine( image.width()));
+
+    for ( y = 0; y < image.height(); y++ ) {
+        unsigned char *data = new unsigned char[lineSize];
+
+        memset( data, 0, lineSize );
+        x = 0;
+
+        while ( x != image.width()) {
+            const int bytePos = x % 8 ? ( x + 7 ) / 8 - 1 : x / 8;
+            const int bitPos = 7 - x % 8;
+
+            if ( !image.pixelColor( x, image.height() - y - 1 ).alpha())
+                data[bytePos] |= 1UL << bitPos;
+
+            x++;
+        }
+
+        out.writeRawData( reinterpret_cast<const char*>( data ), static_cast<int>( lineSize ));
+        delete[] data;
     }
 }
 
@@ -105,12 +121,13 @@ IcoDirectory IconWriter::writeIconData( Layer *layer, QDataStream &out, qint64 p
     BitmapHeader header;
     quint32 imageSize = 0;
     IcoDirectory dir;
+    auto bytesPerLine = []( int width ) { return width % 32 ? ( width / 32 + 1 ) * 4 : width / 8; };
 
     if ( !layer->isCompressed()) {
         // generate header
         header.width = pixmap.width();
         header.height = pixmap.height() * 2;
-        header.imageSize = static_cast<quint32>( pixmap.width() * pixmap.height() * 4 ) + static_cast<quint32>( pixmap.toImage().createAlphaMask().bytesPerLine() * pixmap.height());
+        header.imageSize = static_cast<quint32>( pixmap.width() * pixmap.height() * 4 + bytesPerLine( pixmap.width()) * pixmap.height());
 
         // write header
         out << header;
