@@ -83,7 +83,6 @@ struct BitmapHeader {
 
 inline static QDataStream &operator<<( QDataStream &out, const BitmapHeader &b ) { out << b.headerSize << b.width << b.height << b.planes << b.depth << b.compression << b.imageSize << b.xpm << b.ypm << b.numColors << b.indexes; return out; }
 
-
 /**
  * @brief The IconWriter class
  */
@@ -98,6 +97,6 @@ public:
 
 private:
     IcoDirectory writeIconData( Layer *layer, QDataStream &out, qint64 pos );
-    void writeData( QDataStream &out, const QPixmap &pixmap );
+    void writeData( QDataStream &out, const QImage &image, int bytesPerRow );
     IconWriter() { GarbageMan::instance()->add( this ); }
 };

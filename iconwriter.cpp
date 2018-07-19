@@ -67,10 +67,8 @@ void IconWriter::write( const QString &filename, const QList<Layer*> pixmaps ) {
  * @param out
  * @param pixmap
  */
-void IconWriter::writeData( QDataStream &out, const QPixmap &pixmap ) {
+void IconWriter::writeData( QDataStream &out, const QImage &image, int bytesPerRow ) {
     int y, x;
-    QImage image( pixmap.toImage());
-    image = image.convertToFormat( QImage::Format_ARGB32 );
 
     for ( y = 0; y < image.height(); y++ ) {
         for ( x = 0; x < image.width(); x++ ) {
@@ -87,13 +85,10 @@ void IconWriter::writeData( QDataStream &out, const QPixmap &pixmap ) {
     }
 
     // write mask
-    auto bytesPerLine = []( int width ) { return width % 32 ? ( width / 32 + 1 ) * 4 : width / 8; };
-    const unsigned long lineSize = static_cast<unsigned long>( bytesPerLine( image.width()));
-
     for ( y = 0; y < image.height(); y++ ) {
-        unsigned char *data = new unsigned char[lineSize];
+        unsigned char *data = new unsigned char[bytesPerRow];
 
-        memset( data, 0, lineSize );
+        memset( data, 0, bytesPerRow );
         x = 0;
 
         while ( x != image.width()) {
@@ -106,7 +101,7 @@ void IconWriter::writeData( QDataStream &out, const QPixmap &pixmap ) {
             x++;
         }
 
-        out.writeRawData( reinterpret_cast<const char*>( data ), static_cast<int>( lineSize ));
+        out.writeRawData( reinterpret_cast<const char*>( data ), bytesPerRow );
         delete[] data;
     }
 }
@@ -117,36 +112,38 @@ void IconWriter::writeData( QDataStream &out, const QPixmap &pixmap ) {
  * @return
  */
 IcoDirectory IconWriter::writeIconData( Layer *layer, QDataStream &out, qint64 pos ) {
-    QPixmap pixmap( layer->pixmap );
+    const QImage image( layer->pixmap.toImage().convertToFormat( QImage::Format_ARGB32 ));
     BitmapHeader header;
     quint32 imageSize = 0;
     IcoDirectory dir;
-    auto bytesPerLine = []( int width ) { return width % 32 ? ( width / 32 + 1 ) * 4 : width / 8; };
+    const int bytesPerRow = image.width() % 32 ? ( image.width() / 32 + 1 ) * 4 : image.width() / 8;
 
     if ( !layer->isCompressed()) {
         // generate header
-        header.width = pixmap.width();
-        header.height = pixmap.height() * 2;
-        header.imageSize = static_cast<quint32>( pixmap.width() * pixmap.height() * 4 + bytesPerLine( pixmap.width()) * pixmap.height());
+        header.width = image.width();
+        header.height = image.height() * 2;
+        header.imageSize = static_cast<quint32>( image.width() * image.height() * 4 + bytesPerRow * image.height());
+        header.xpm = image.dotsPerMeterX();
+        header.ypm = image.dotsPerMeterY();
 
         // write header
         out << header;
 
         // write pixmap data
-        this->writeData( out, pixmap );
+        this->writeData( out, image, bytesPerRow );
     } else {
         QByteArray bytes;
         QBuffer buffer( &bytes );
         buffer.open( QIODevice::WriteOnly );
-        pixmap.save( &buffer, "PNG" );
+        image.save( &buffer, "PNG" );
         out.writeRawData( bytes, bytes.size());
         imageSize = static_cast<quint32>( bytes.size());
         buffer.close();
     }
 
     // generate ico directory
-    dir.width = layer->isCompressed() ? 0 : static_cast<quint8>( pixmap.width());
-    dir.height = layer->isCompressed() ? 0 : static_cast<quint8>( pixmap.height());
+    dir.width = layer->isCompressed() ? 0 : header.width;
+    dir.height = layer->isCompressed() ? 0 : header.height / 2;
     dir.bytes = layer->isCompressed() ? imageSize : sizeof( BitmapHeader ) + header.imageSize;
     dir.offset = static_cast<quint32>( pos );
 

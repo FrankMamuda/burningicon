@@ -342,12 +342,17 @@ void MainWindow::on_actionExport_triggered() {
     }
 
     // get fileName
-    const QString fileName( QFileDialog::getSaveFileName( this, this->tr( "Save Icon" ), path, this->tr( "Icon Files (*.ico)" )));
+    QString fileName( QFileDialog::getSaveFileName( this, this->tr( "Save Icon" ), path, this->tr( "Icon Files (*.ico)" )));
     if ( fileName.isEmpty())
         return;
 
     // check if exists
     QFile file( fileName );
+
+    // add extension
+    if ( !fileName.endsWith( ".ico" ))
+        fileName.append( ".ico" );
+
     if ( file.exists()) {
         // check if file is readable
         if ( !file.open( QIODevice::ReadOnly )) {
