@@ -86,6 +86,28 @@ IconMaker::IconMaker( QWidget *parent ) : QMainWindow( parent ), ui( new Ui::Ico
     this->colourChanged( TextTarget, QColor( Qt::white ));
 
     this->scene->setBackgroundBrush( QBrush( QPixmap( ":/icons/transparency" )));
+
+
+    // bold lambda
+    this->connect( this->ui->boldButton, &QToolButton::toggled, [ this ]( bool enabled ) {
+        this->font.setBold( enabled );
+        this->text->setFont( font );
+        this->adjustText();
+    } );
+
+    // italic lambda
+    this->connect( this->ui->italicButton, &QToolButton::toggled, [ this ]( bool enabled ) {
+        this->font.setItalic( enabled );
+        this->text->setFont( font );
+        this->adjustText();
+    } );
+
+    // underline lambda
+    this->connect( this->ui->underlineButton, &QToolButton::toggled, [ this ]( bool enabled ) {
+        this->font.setUnderline( enabled );
+        this->text->setFont( font );
+        this->adjustText();
+    } );
 }
 
 /**
@@ -120,6 +142,10 @@ IconMaker::~IconMaker() {
     this->disconnect( this->ui->brushColourButton, SLOT( pressed()));
     this->disconnect( this->ui->penColourButton, SLOT( pressed()));
     this->disconnect( this->ui->textColourButton, SLOT( pressed()));
+    this->disconnect( this->ui->boldButton, SIGNAL( toggled( bool )));
+    this->disconnect( this->ui->italicButton, SIGNAL( toggled( bool )));
+    this->disconnect( this->ui->underlineButton, SIGNAL( toggled( bool )));
+
 
     delete this->scene;
     delete this->ui;

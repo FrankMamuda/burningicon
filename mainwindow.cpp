@@ -19,6 +19,7 @@
 //
 // TODO:
 //
+// GENERAL:
 //  progressbar and QtConcurrent
 //  aliasing layers
 //  disabling layers
@@ -27,6 +28,14 @@
 //  reset custom layer scales
 //  icon crop dialog
 //  icon resource export
+//  make generic icons for layers only?
+//
+// GENERIC ICON MAKER:
+//  multi layered design
+//  multi-type design (text, shape, etc.)
+//  basic bezel support (draw, fill, etc.)
+//  image import
+//  save settings/project
 //
 
 //
