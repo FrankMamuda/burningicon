@@ -242,6 +242,20 @@
          </property>
         </widget>
        </item>
+       <item>
+        <widget class="QToolButton" name="repopulateButton">
+         <property name="toolTip">
+          <string>Repopulate layers</string>
+         </property>
+         <property name="text">
+          <string>...</string>
+         </property>
+         <property name="icon">
+          <iconset resource="resources.qrc">
+           <normaloff>:/icons/restore</normaloff>:/icons/restore</iconset>
+         </property>
+        </widget>
+       </item>
       </layout>
      </item>
     </layout>

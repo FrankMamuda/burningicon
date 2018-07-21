@@ -45,6 +45,7 @@ constexpr int __attribute__((unused)) MaximumScale = 512;
 constexpr int MinimumScale = 4;
 constexpr int ThresholdScale = 256;
 constexpr int MaximumScale = 512;
+const static QString AppName( QT_TR_NOOP_UTF8( "BurningIcon" ));
 #endif
 }
 

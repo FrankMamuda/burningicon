@@ -108,6 +108,15 @@ IconMaker::IconMaker( QWidget *parent ) : QMainWindow( parent ), ui( new Ui::Ico
         this->text->setFont( font );
         this->adjustText();
     } );
+
+    this->ui->fontCombo->setCurrentFont( this->font );
+
+    // font lambda
+    this->connect( this->ui->fontCombo, &QFontComboBox::currentFontChanged, [ this ]( const QFont &font ) {
+        this->font.setFamily( font.family());
+        this->text->setFont( font );
+        this->adjustText();
+    } );
 }
 
 /**
@@ -145,7 +154,7 @@ IconMaker::~IconMaker() {
     this->disconnect( this->ui->boldButton, SIGNAL( toggled( bool )));
     this->disconnect( this->ui->italicButton, SIGNAL( toggled( bool )));
     this->disconnect( this->ui->underlineButton, SIGNAL( toggled( bool )));
-
+    this->disconnect( this->ui->fontCombo, SLOT( currentFontChanged( QFont )));
 
     delete this->scene;
     delete this->ui;

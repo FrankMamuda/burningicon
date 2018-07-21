@@ -25,7 +25,6 @@
 //  disabling layers
 //  generic icon creation
 //  project save/load
-//  reset custom layer scales
 //  icon crop dialog
 //  icon resource export
 //  make generic icons for layers only?
@@ -36,6 +35,9 @@
 //  basic bezel support (draw, fill, etc.)
 //  image import
 //  save settings/project
+//
+// FIXME:
+//  occasional indexOutOfRange on addLayer
 //
 
 //
@@ -294,6 +296,20 @@ void MainWindow::initialize() {
         this->setPixmap( pixmap );
     } );
 
+    // repopulate lambda
+    this->connect( this->ui->repopulateButton, &QPushButton::clicked, [ this, buttonTest ]() {
+        if ( QMessageBox::question( this, Ui::AppName,
+                               this->tr( "Repopulate layers with scales defined in settings?\nThis will delete the existing layers." ),
+                               QMessageBox::Yes | QMessageBox::No ) == QMessageBox::Yes )
+            this->generateLayers( this->settingsDialog->currentScales());
+
+        // update pixmap and display its scale
+        if ( !this->layers.isEmpty())
+            this->ui->pixmapLabel->setPixmap( this->layers.last()->pixmap );
+
+        buttonTest();
+    } );
+
     // icon maker lambda
     this->connect( this->ui->makeButton, &QPushButton::clicked, [ this ]() {
         IconMaker *maker = new IconMaker;
@@ -318,6 +334,8 @@ MainWindow::~MainWindow() {
     this->disconnect( this->ui->removeButton, SLOT( clicked()));
     this->disconnect( this->ui->overrideButton, SLOT( clicked( bool )));
     this->disconnect( this->ui->pngButton, SLOT( clicked( bool )));
+    this->disconnect( this->ui->repopulateButton, SLOT( clicked()));
+
     this->disconnect( this->ui->layerView->selectionModel(), SLOT( selectionChanged( QItemSelection, QItemSelection )));
     this->disconnect( this->ui->stackedWidget, SLOT( currentChanged( int )));
 
@@ -340,13 +358,13 @@ void MainWindow::on_actionExport_triggered() {
 
     // check if any pixmap selected
     if ( pixmap == nullptr ) {
-        QMessageBox::critical( this, this->tr( "Image converter" ), this->tr( "No image selected." ), QMessageBox::Ok );
+        QMessageBox::critical( this, Ui::AppName, this->tr( "No image selected." ), QMessageBox::Ok );
         return;
     }
 
     // check if a valid pixmap selected
     if ( pixmap->isNull() || pixmap->width() < Ui::MinimumScale || pixmap->height() < Ui::MinimumScale ) {
-        QMessageBox::critical( this, this->tr( "Image converter" ), this->tr( "Invalid image selected." ), QMessageBox::Ok );
+        QMessageBox::critical( this, Ui::AppName, this->tr( "Invalid image selected." ), QMessageBox::Ok );
         return;
     }
 
@@ -365,7 +383,7 @@ void MainWindow::on_actionExport_triggered() {
     if ( file.exists()) {
         // check if file is readable
         if ( !file.open( QIODevice::ReadOnly )) {
-            QMessageBox::critical( this, this->tr( "Image converter" ),
+            QMessageBox::critical( this, Ui::AppName,
                                    this->tr( "Cannot open destination file." ),
                                    QMessageBox::Ok );
             return;
@@ -374,7 +392,7 @@ void MainWindow::on_actionExport_triggered() {
 
         // check if file is writable
         if ( !file.open( QIODevice::WriteOnly )) {
-            QMessageBox::critical( this, this->tr( "Image converter" ),
+            QMessageBox::critical( this, Ui::AppName,
                                    this->tr( "Cannot write destination file." ),
                                    QMessageBox::Ok );
             return;
