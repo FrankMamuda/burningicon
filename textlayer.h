@@ -21,27 +21,20 @@
 //
 // includes
 //
-#include <QAbstractListModel>
-#include <QPixmap>
+#include "designerlayer.h"
+#include <QGraphicsScene>
+#include <QGraphicsTextItem>
 
 /**
- * @brief The LayerModel class
+ * @brief The ImageLayer class
  */
-class LayerModel : public QAbstractListModel {
-    friend class MainWindow;
-    Q_OBJECT
-    Q_ENUMS( Roles )
+class TextLayer final : public DesignerLayer {
+    friend class Designer;
 
 public:
-    enum Roles {
-        ScaleRole = Qt::UserRole
-    };
+    TextLayer( QGraphicsScene *scene = nullptr, const QString &text = QString());
 
-    explicit LayerModel( QObject *parent = nullptr ) : QAbstractListModel( parent ) {}
-    ~LayerModel() = default;
-    int rowCount( const QModelIndex &parent = QModelIndex()) const override;
-    QVariant data( const QModelIndex &index, int role = Qt::DisplayRole ) const override;
-
-public slots:
-    void resetModel();
+private:
+    QGraphicsTextItem *textItem;
+    QFont font;
 };

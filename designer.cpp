@@ -19,9 +19,9 @@
 //
 // includes
 //
-#include "iconmaker.h"
+#include "designer.h"
 #include "mainwindow.h"
-#include "ui_iconmaker.h"
+#include "ui_designer.h"
 #include <QBitmap>
 #include <QColorDialog>
 #include <QRectF>
@@ -29,15 +29,15 @@
 #include <QDir>
 
 /**
- * @brief MainWindow::MainWindow
+ * @brief Designer::Designer
  * @param parent
  */
-IconMaker::IconMaker( QWidget *parent ) : QMainWindow( parent ), ui( new Ui::IconMaker ) {
+Designer::Designer( QWidget *parent ) : QMainWindow( parent ), ui( new Ui::Designer ) {
     this->ui->setupUi( this );
 
     this->ui->graphicsView->setRenderHints( QPainter::Antialiasing | QPainter::SmoothPixmapTransform );
-    this->ui->graphicsView->setHorizontalScrollBarPolicy ( Qt::ScrollBarAlwaysOff );
-    this->ui->graphicsView->setVerticalScrollBarPolicy ( Qt::ScrollBarAlwaysOff );
+    this->ui->graphicsView->setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+    this->ui->graphicsView->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
 
     this->scene = new QGraphicsScene();
     const QRectF rect( 0, 0, 256, 256 );
@@ -120,10 +120,11 @@ IconMaker::IconMaker( QWidget *parent ) : QMainWindow( parent ), ui( new Ui::Ico
 }
 
 /**
- * @brief PropertyEditor::colourChanged
+ * @brief Designer::colourChanged
+ * @param target
  * @param colour
  */
-void IconMaker::colourChanged( ColourTarget target, const QColor &colour ) {
+void Designer::colourChanged( ColourTarget target, const QColor &colour ) {
     QPixmap pixmap( ":/icons/colour" );
     QBitmap mask( pixmap.createMaskFromColor( Qt::transparent, Qt::MaskInColor ));
 
@@ -145,9 +146,9 @@ void IconMaker::colourChanged( ColourTarget target, const QColor &colour ) {
 }
 
 /**
- * @brief MainWindow::~MainWindow
+ * @brief Designer::~Designer
  */
-IconMaker::~IconMaker() {
+Designer::~Designer() {
     this->disconnect( this->ui->brushColourButton, SLOT( pressed()));
     this->disconnect( this->ui->penColourButton, SLOT( pressed()));
     this->disconnect( this->ui->textColourButton, SLOT( pressed()));
@@ -161,10 +162,10 @@ IconMaker::~IconMaker() {
 }
 
 /**
- * @brief MainWindow::on_ellipseSizelSlider_valueChanged
+ * @brief Designer::on_ellipseSizelSlider_valueChanged
  * @param value
  */
-void IconMaker::on_ellipseSizelSlider_valueChanged( int value ) {
+void Designer::on_ellipseSizelSlider_valueChanged( int value ) {
     const qreal factor = static_cast<qreal>( value ) / 100.0;
     const QRectF rect( this->scene->sceneRect());
 
@@ -180,53 +181,51 @@ void IconMaker::on_ellipseSizelSlider_valueChanged( int value ) {
 }
 
 /**
- * @brief MainWindow::on_penSizeSlider_valueChanged
+ * @brief Designer::on_penSizeSlider_valueChanged
  * @param value
  */
-void IconMaker::on_penSizeSlider_valueChanged( int value ) {
+void Designer::on_penSizeSlider_valueChanged( int value ) {
     this->pen.setWidth( value );
     this->ellipse->setPen( pen );
 }
 
 /**
- * @brief MainWindow::on_textEdit_textChanged
- * @param arg1
+ * @brief Designer::on_textEdit_textChanged
+ * @param text
  */
-void IconMaker::on_textEdit_textChanged( const QString &text ) {
+void Designer::on_textEdit_textChanged( const QString &text ) {
     this->text->setPlainText( text );
     this->adjustText();
 }
 
 /**
- * @brief MainWindow::on_pointSizeSlider_valueChanged
+ * @brief Designer::on_pointSizeSlider_valueChanged
  * @param value
  */
-void IconMaker::on_pointSizeSlider_valueChanged( int value ) {
+void Designer::on_pointSizeSlider_valueChanged( int value ) {
     this->font.setPointSize( value );
     this->text->setFont( font );
     this->adjustText();
 }
 
 /**
- * @brief MainWindow::on_textXSlider_valueChanged
- * @param value
+ * @brief Designer::on_textXSlider_valueChanged
  */
-void IconMaker::on_textXSlider_valueChanged( int ) {
+void Designer::on_textXSlider_valueChanged( int ) {
     this->adjustText();
 }
 
 /**
- * @brief MainWindow::on_textYSlider_valueChanged
- * @param value
+ * @brief Designer::on_textYSlider_valueChanged
  */
-void IconMaker::on_textYSlider_valueChanged( int ) {
+void Designer::on_textYSlider_valueChanged( int ) {
     this->adjustText();
 }
 
 /**
- * @brief MainWindow::adjustText
+ * @brief Designer::adjustText
  */
-void IconMaker::adjustText() {
+void Designer::adjustText() {
     QRectF sceneRect( this->scene->sceneRect());
     QRectF rect( this->text->sceneBoundingRect());
     this->text->setPos( sceneRect.width() / 2.0 - rect.width() / 2.0 + this->ui->textXSlider->value(),
@@ -234,9 +233,9 @@ void IconMaker::adjustText() {
 }
 
 /**
- * @brief MainWindow::on_exportButton_clicked
+ * @brief Designer::on_exportButton_clicked
  */
-void IconMaker::on_exportButton_clicked() {
+void Designer::on_exportButton_clicked() {
     QPixmap pixmap( 512, 512 );
     pixmap.fill( Qt::transparent );
     QPainter painter( &pixmap );

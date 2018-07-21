@@ -16,32 +16,23 @@
  *
  */
 
-#pragma once
-
 //
 // includes
 //
-#include <QAbstractListModel>
-#include <QPixmap>
+#include "imagelayer.h"
 
 /**
- * @brief The LayerModel class
+ * @brief ImageLayer::ImageLayer
  */
-class LayerModel : public QAbstractListModel {
-    friend class MainWindow;
-    Q_OBJECT
-    Q_ENUMS( Roles )
+ImageLayer::ImageLayer( QGraphicsScene *scene, const QPixmap &pixmap ) :
+    DesignerLayer( scene ),
+    pixmapItem( nullptr )
+{
 
-public:
-    enum Roles {
-        ScaleRole = Qt::UserRole
-    };
+    if ( this->scene() == nullptr )
+        return;
 
-    explicit LayerModel( QObject *parent = nullptr ) : QAbstractListModel( parent ) {}
-    ~LayerModel() = default;
-    int rowCount( const QModelIndex &parent = QModelIndex()) const override;
-    QVariant data( const QModelIndex &index, int role = Qt::DisplayRole ) const override;
-
-public slots:
-    void resetModel();
-};
+    DesignerLayer::setName( this->tr( "Image layer" ));
+    DesignerLayer::setType( DesignerLayer::Types::Image );
+    this->pixmapItem = this->scene()->addPixmap( pixmap );
+}

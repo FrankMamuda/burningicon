@@ -16,32 +16,15 @@
  *
  */
 
-#pragma once
-
 //
 // includes
 //
-#include <QAbstractListModel>
-#include <QPixmap>
+#include "designerlayer.h"
 
 /**
- * @brief The LayerModel class
+ * @brief DesignerLayer::DesignerLayer
+ * @param parent
  */
-class LayerModel : public QAbstractListModel {
-    friend class MainWindow;
-    Q_OBJECT
-    Q_ENUMS( Roles )
+DesignerLayer::DesignerLayer( QGraphicsScene *s ) : m_type( DesignerLayer::Types::NoType ), m_scene( s ) {
 
-public:
-    enum Roles {
-        ScaleRole = Qt::UserRole
-    };
-
-    explicit LayerModel( QObject *parent = nullptr ) : QAbstractListModel( parent ) {}
-    ~LayerModel() = default;
-    int rowCount( const QModelIndex &parent = QModelIndex()) const override;
-    QVariant data( const QModelIndex &index, int role = Qt::DisplayRole ) const override;
-
-public slots:
-    void resetModel();
-};
+}

@@ -21,27 +21,36 @@
 //
 // includes
 //
-#include <QAbstractListModel>
-#include <QPixmap>
+#include <QGraphicsScene>
+#include <QObject>
 
 /**
- * @brief The LayerModel class
+ * @brief The DesignerLayer class
  */
-class LayerModel : public QAbstractListModel {
-    friend class MainWindow;
+class DesignerLayer : public QObject {
     Q_OBJECT
-    Q_ENUMS( Roles )
+    Q_ENUMS( Types )
+    Q_DISABLE_COPY( DesignerLayer )
 
 public:
-    enum Roles {
-        ScaleRole = Qt::UserRole
+    enum class Types {
+        NoType = -1,
+        Text,
+        Shape,
+        Image,
+        Bezel
     };
-
-    explicit LayerModel( QObject *parent = nullptr ) : QAbstractListModel( parent ) {}
-    ~LayerModel() = default;
-    int rowCount( const QModelIndex &parent = QModelIndex()) const override;
-    QVariant data( const QModelIndex &index, int role = Qt::DisplayRole ) const override;
+    explicit DesignerLayer( QGraphicsScene *s = nullptr );
+    Types type() const { return this->m_type; }
+    QGraphicsScene *scene() const { return this->m_scene; }
+    QString name() const { return this->m_name; }
 
 public slots:
-    void resetModel();
+    void setName( const QString &name ) { this->m_name = name; }
+    void setType( Types type ) { this->m_type = type; }
+
+private:
+    Types m_type;
+    QGraphicsScene *m_scene;
+    QString m_name;
 };

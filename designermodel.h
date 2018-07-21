@@ -25,10 +25,10 @@
 #include <QPixmap>
 
 /**
- * @brief The LayerModel class
+ * @brief The DesignerModel class
  */
-class LayerModel : public QAbstractListModel {
-    friend class MainWindow;
+class DesignerModel : public QAbstractListModel {
+    friend class Designer;
     Q_OBJECT
     Q_ENUMS( Roles )
 
@@ -37,8 +37,8 @@ public:
         ScaleRole = Qt::UserRole
     };
 
-    explicit LayerModel( QObject *parent = nullptr ) : QAbstractListModel( parent ) {}
-    ~LayerModel() = default;
+    explicit DesignerModel( QObject *parent = nullptr ) : QAbstractListModel( parent ) {}
+    ~DesignerModel() = default;
     int rowCount( const QModelIndex &parent = QModelIndex()) const override;
     QVariant data( const QModelIndex &index, int role = Qt::DisplayRole ) const override;
 

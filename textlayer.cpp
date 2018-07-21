@@ -16,32 +16,23 @@
  *
  */
 
-#pragma once
-
 //
 // includes
 //
-#include <QAbstractListModel>
-#include <QPixmap>
+#include "textlayer.h"
 
 /**
- * @brief The LayerModel class
+ * @brief TextLayer::TextLayer
  */
-class LayerModel : public QAbstractListModel {
-    friend class MainWindow;
-    Q_OBJECT
-    Q_ENUMS( Roles )
+TextLayer::TextLayer( QGraphicsScene *scene, const QString &text ) :
+    DesignerLayer( scene ),
+    textItem( nullptr )
+{
 
-public:
-    enum Roles {
-        ScaleRole = Qt::UserRole
-    };
+    if ( this->scene() == nullptr )
+        return;
 
-    explicit LayerModel( QObject *parent = nullptr ) : QAbstractListModel( parent ) {}
-    ~LayerModel() = default;
-    int rowCount( const QModelIndex &parent = QModelIndex()) const override;
-    QVariant data( const QModelIndex &index, int role = Qt::DisplayRole ) const override;
-
-public slots:
-    void resetModel();
-};
+    DesignerLayer::setName( this->tr( "Text layer" ));
+    DesignerLayer::setType( DesignerLayer::Types::Text );
+    this->textItem = this->scene()->addText( text );
+}

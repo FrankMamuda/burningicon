@@ -49,7 +49,7 @@
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QMessageBox>
-#include <iconmaker.h>
+#include <designer.h>
 #include "iconwriter.h"
 #include "layermodel.h"
 #include "main.h"
@@ -312,9 +312,7 @@ void MainWindow::initialize() {
 
     // icon maker lambda
     this->connect( this->ui->makeButton, &QPushButton::clicked, [ this ]() {
-        IconMaker *maker = new IconMaker;
-        maker->setAttribute( Qt::WA_DeleteOnClose, true );
-        maker->show();
+        Designer::instance()->show();
     } );
 
     // add to garbage man

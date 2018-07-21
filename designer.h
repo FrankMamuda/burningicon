@@ -25,16 +25,26 @@
 #include <QMainWindow>
 #include <QPen>
 
+/**
+ * @brief The Ui namespace
+ */
 namespace Ui {
-class IconMaker;
+class Designer;
 }
+
+//
+// classes
+//
+class DesignerLayer;
+class DesignerModel;
 
 /**
  * @brief The MainWindow class
  */
-class IconMaker : public QMainWindow {
+class Designer final : public QMainWindow {
     Q_OBJECT
     Q_ENUMS( ColourTarget )
+    Q_DISABLE_COPY( Designer )
 
 public:
     enum ColourTarget {
@@ -44,8 +54,9 @@ public:
         TextTarget
     };
 
-    explicit IconMaker( QWidget *parent = nullptr );
-    ~IconMaker();
+    static Designer *instance() { static Designer *instance = new Designer(); return instance; }
+    ~Designer();
+    QList<DesignerLayer*> layers;
 
 private slots:
     void on_ellipseSizelSlider_valueChanged( int value );
@@ -59,11 +70,18 @@ private slots:
     void on_exportButton_clicked();
 
 private:
-    Ui::IconMaker *ui;
+    explicit Designer( QWidget *parent = nullptr );
+    Ui::Designer *ui;
+
+    /* remove me */
     QGraphicsEllipseItem *ellipse;
     QGraphicsTextItem *text;
     QGraphicsScene *scene;
     QPen pen;
     QBrush brush;
     QFont font;
+    /* end */
+
+    DesignerModel *model;
+    QMap<int, DesignerLayer*> layerMap;
 };

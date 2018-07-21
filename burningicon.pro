@@ -32,7 +32,11 @@ SOURCES += \
     xmltools.cpp \
     variable.cpp \
     settings.cpp \
-    iconmaker.cpp
+    textlayer.cpp \
+    designer.cpp \
+    designerlayer.cpp \
+    imagelayer.cpp \
+    designermodel.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -46,13 +50,17 @@ HEADERS += \
     variableentry.h \
     widget.h \
     settings.h \
-    iconmaker.h \
-    slider.h
+    slider.h \
+    textlayer.h \
+    designer.h \
+    designerlayer.h \
+    imagelayer.h \
+    designermodel.h
 
 FORMS += \
         mainwindow.ui \
     settings.ui \
-    iconmaker.ui
+    designer.ui
 
 DISTFILES +=
 
