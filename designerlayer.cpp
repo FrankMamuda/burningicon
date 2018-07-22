@@ -28,3 +28,5 @@
 DesignerLayer::DesignerLayer( QGraphicsScene *s ) : m_type( DesignerLayer::Types::NoType ), m_scene( s ) {
 
 }
+
+

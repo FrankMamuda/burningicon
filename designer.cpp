@@ -27,96 +27,46 @@
 #include <QRectF>
 #include <QFileDialog>
 #include <QDir>
+#include <QInputDialog>
+#include "designermodel.h"
+#include "shapelayer.h"
+#include "textlayer.h"
+#include <QDebug>
 
 /**
  * @brief Designer::Designer
  * @param parent
  */
-Designer::Designer( QWidget *parent ) : QMainWindow( parent ), ui( new Ui::Designer ) {
+Designer::Designer( QWidget *parent ) : QMainWindow( parent ), ui( new Ui::Designer ), model( nullptr ), addMenu( new QMenu()) {
     this->ui->setupUi( this );
 
+    // set up graphics view
     this->ui->graphicsView->setRenderHints( QPainter::Antialiasing | QPainter::SmoothPixmapTransform );
     this->ui->graphicsView->setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
     this->ui->graphicsView->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
 
+    // set up scene
     this->scene = new QGraphicsScene();
-    const QRectF rect( 0, 0, 256, 256 );
-    scene->setSceneRect( rect );
-
-    this->pen = QPen( Qt::black );
-    this->brush = QBrush( Qt::darkGreen );
-
-    this->ellipse = scene->addEllipse( rect, this->pen, this->brush );
-    this->ui->ellipseSizelSlider->setValue( this->ui->ellipseSizelSlider->value());
-    this->ui->penSizeSlider->setValue( this->ui->penSizeSlider->value());
-    this->ui->graphicsView->setScene( scene );
-
-    // brush colour picker lambda
-    this->connect( this->ui->brushColourButton, &QPushButton::pressed, [ this ] () {
-        QColor colour( QColorDialog::getColor( this->brush.color(), this ));
-        if ( !colour.isValid())
-            return;
-
-        this->colourChanged( BrushTarget, colour );
-    } );
-
-    // pen colour picker lambda
-    this->connect( this->ui->penColourButton, &QPushButton::pressed, [ this ] () {
-        QColor colour( QColorDialog::getColor( this->pen.color(), this ));
-        if ( !colour.isValid())
-            return;
-
-        this->colourChanged( PenTarget, colour );
-    } );
-
-    // text colour picker lambda
-    this->connect( this->ui->textColourButton, &QPushButton::pressed, [ this ] () {
-        QColor colour( QColorDialog::getColor( this->text->defaultTextColor(), this ));
-        if ( !colour.isValid())
-            return;
-
-        this->colourChanged( TextTarget, colour );
-    } );
-
-    this->text = this->scene->addText( this->ui->textEdit->text(), this->font );
-    this->on_pointSizeSlider_valueChanged( this->ui->pointSizeSlider->value());
-
-    this->colourChanged( PenTarget, this->pen.color());
-    this->colourChanged( BrushTarget, this->brush.color());
-    this->colourChanged( TextTarget, QColor( Qt::white ));
-
+    this->scene->setSceneRect( QRectF( 0, 0, 256, 256 ));
     this->scene->setBackgroundBrush( QBrush( QPixmap( ":/icons/transparency" )));
+    this->ui->graphicsView->setScene( this->scene );
 
+    // setup ui element controls
+    this->setupShape();
+    this->setupText();
+}
 
-    // bold lambda
-    this->connect( this->ui->boldButton, &QToolButton::toggled, [ this ]( bool enabled ) {
-        this->font.setBold( enabled );
-        this->text->setFont( font );
-        this->adjustText();
-    } );
+/**
+ * @brief Designer::currentLayer
+ * @return
+ */
+DesignerLayer *Designer::currentLayer() const {
+    const QModelIndex index( this->ui->layerView->currentIndex());
 
-    // italic lambda
-    this->connect( this->ui->italicButton, &QToolButton::toggled, [ this ]( bool enabled ) {
-        this->font.setItalic( enabled );
-        this->text->setFont( font );
-        this->adjustText();
-    } );
+    if ( !index.isValid())
+        return nullptr;
 
-    // underline lambda
-    this->connect( this->ui->underlineButton, &QToolButton::toggled, [ this ]( bool enabled ) {
-        this->font.setUnderline( enabled );
-        this->text->setFont( font );
-        this->adjustText();
-    } );
-
-    this->ui->fontCombo->setCurrentFont( this->font );
-
-    // font lambda
-    this->connect( this->ui->fontCombo, &QFontComboBox::currentFontChanged, [ this ]( const QFont &font ) {
-        this->font.setFamily( font.family());
-        this->text->setFont( font );
-        this->adjustText();
-    } );
+    return this->layers.at( index.row());
 }
 
 /**
@@ -132,15 +82,37 @@ void Designer::colourChanged( ColourTarget target, const QColor &colour ) {
     pixmap.setMask( mask );
 
     if ( target == BrushTarget ) {
-        this->brush.setColor( colour );
-        this->ellipse->setBrush( this->brush );
+        ShapeLayer *shape( qobject_cast<ShapeLayer *>( this->currentLayer()));
+        if ( shape == nullptr )
+            return;
+
+        shape->brush.setColor( colour );
+
+        if ( shape->shape() == ShapeLayer::Shapes::Ellipse )
+            shape->ellipseItem->setBrush( shape->brush );
+        else if ( shape->shape() == ShapeLayer::Shapes::Rectangle )
+            shape->rectItem->setBrush( shape->brush );
+
         this->ui->brushColourButton->setIcon( QIcon( pixmap ));
     } else if ( target == PenTarget ) {
-        this->pen.setColor( colour );
-        this->ellipse->setPen( this->pen );
+        ShapeLayer *shape( qobject_cast<ShapeLayer *>( this->currentLayer()));
+        if ( shape == nullptr )
+            return;
+
+        shape->pen.setColor( colour );
+
+        if ( shape->shape() == ShapeLayer::Shapes::Ellipse )
+            shape->ellipseItem->setPen( shape->pen );
+        else if ( shape->shape() == ShapeLayer::Shapes::Rectangle )
+            shape->rectItem->setPen( shape->pen );
+
         this->ui->penColourButton->setIcon( QIcon( pixmap ));
     } else if ( target == TextTarget ) {
-        this->text->setDefaultTextColor( colour );
+        TextLayer *text( qobject_cast<TextLayer *>( this->currentLayer()));
+        if ( text == nullptr )
+            return;
+
+        text->textItem->setDefaultTextColor( colour );
         this->ui->textColourButton->setIcon( QIcon( pixmap ));
     }
 }
@@ -156,9 +128,209 @@ Designer::~Designer() {
     this->disconnect( this->ui->italicButton, SIGNAL( toggled( bool )));
     this->disconnect( this->ui->underlineButton, SIGNAL( toggled( bool )));
     this->disconnect( this->ui->fontCombo, SLOT( currentFontChanged( QFont )));
+    this->disconnect( this->ui->layerView->selectionModel(), SLOT( selectionChanged( QItemSelection, QItemSelection )));
+    this->disconnect( this->ui->addButton, SLOT( clicked()));
+    this->disconnect( this->ui->removeButton, SLOT( clicked()));
+    this->disconnect( this->ui->renameButton, SLOT( clicked()));
 
+    delete this->addMenu;
     delete this->scene;
     delete this->ui;
+}
+
+/**
+ * @brief Designer::setupLayers
+ */
+void Designer::setupLayers() {
+    // initialize model
+    this->model = new DesignerModel();
+    this->ui->layerView->setModel( this->model );
+
+    // index change lambda
+    this->connect( this->ui->layerView->selectionModel(), &QItemSelectionModel::selectionChanged, [ this ]() {
+        const QModelIndex index( this->ui->layerView->currentIndex());
+
+        // disable/enable tools dock
+        this->ui->toolsDock->setEnabled( index.isValid());
+
+        if ( !index.isValid())
+            return;
+
+        // switch current tool on layer change
+        if ( this->layers.at( index.row())->type() == DesignerLayer::Types::Text ) {
+            this->ui->stackedWidget->setCurrentIndex( Text );
+
+            TextLayer *text( qobject_cast<TextLayer *>( this->currentLayer()));
+            if ( text == nullptr )
+                return;
+
+            this->ui->textEdit->setText( text->textItem->toPlainText());
+            //this->on_pointSizeSlider_valueChanged( text->font.pointSize());
+            this->ui->penSizeSlider->setValue( text->font.pointSize());
+            this->colourChanged( TextTarget, QColor( Qt::white ));
+            this->ui->fontCombo->setCurrentFont( text->font );
+        } else if ( this->layers.at( index.row())->type() == DesignerLayer::Types::Shape ) {
+            this->ui->stackedWidget->setCurrentIndex( Shape );
+
+            ShapeLayer *shape( qobject_cast<ShapeLayer *>( this->currentLayer()));
+            if ( shape == nullptr )
+                return;
+
+            this->colourChanged( PenTarget, shape->pen.color());
+            this->colourChanged( BrushTarget, shape->brush.color());
+            //this->on_ellipseSizelSlider_valueChanged( static_cast<int>( shape->m_horizontalScale * 100 ));
+            this->ui->ellipseSizelSlider->setValue( static_cast<int>( shape->m_horizontalScale * 100 ));
+        } else
+            this->ui->toolsDock->setEnabled( false );
+    } );
+    this->ui->toolsDock->setEnabled( false );
+
+    // add demo layers
+    // TODO: delete on close
+    this->addLayer( new ShapeLayer( this->scene, ShapeLayer::Shapes::Ellipse ));
+    this->addLayer( new TextLayer( this->scene, "Aa" ));
+
+    // reset model
+    this->model->resetModel();
+
+    // add layer lambda
+    // TODO: disconnect me?
+    // TODO: button tests
+    this->addMenu->addAction( this->tr( "Add text item" ), [ this ]() { this->addLayer( new TextLayer( this->scene, "Aa" )); } );
+    this->addMenu->addAction( this->tr( "Add ellipse item" ), [ this ]() { this->addLayer( new ShapeLayer( this->scene, ShapeLayer::Shapes::Ellipse )); } );
+    this->addMenu->addAction( this->tr( "Add rectangle item" ), [ this ]() { this->addLayer( new ShapeLayer( this->scene, ShapeLayer::Shapes::Rectangle )); } );
+    this->connect( this->ui->addButton, &QToolButton::clicked, [ this ]() {
+        this->addMenu->exec( QCursor::pos());
+        this->model->resetModel();
+    } );
+
+    // TODO: remove layer lambda
+    this->connect( this->ui->removeButton, &QToolButton::clicked, [ this ]() {} );
+
+    // rename layer lambda
+    this->connect( this->ui->renameButton, &QToolButton::clicked, [ this ]() {
+        bool ok;
+
+        if ( this->currentLayer() == nullptr )
+            return;
+
+        const QString name = QInputDialog::getText( this, this->tr( "Rename layer" ), this->tr( "New name:" ), QLineEdit::Normal, this->currentLayer()->name(), &ok );
+        if ( ok && !name.isEmpty()) {
+            this->currentLayer()->setName( name );
+            this->model->resetModel();
+        }
+    } );
+
+}
+
+/**
+ * @brief Designer::setupText
+ */
+void Designer::setupText() {
+    // text colour picker lambda
+    this->connect( this->ui->textColourButton, &QPushButton::pressed, [ this ] () {
+        TextLayer *text( qobject_cast<TextLayer *>( this->currentLayer()));
+        if ( text == nullptr )
+            return;
+
+        QColor colour( QColorDialog::getColor( text->textItem->defaultTextColor(), this ));
+        if ( !colour.isValid())
+            return;
+
+        this->colourChanged( TextTarget, colour );
+    } );
+
+    // bold lambda
+    this->connect( this->ui->boldButton, &QToolButton::toggled, [ this ]( bool enabled ) {
+        TextLayer *text( qobject_cast<TextLayer *>( this->currentLayer()));
+        if ( text == nullptr )
+            return;
+
+        text->font.setBold( enabled );
+        text->textItem->setFont( text->font );
+        this->adjustText();
+    } );
+
+    // italic lambda
+    this->connect( this->ui->italicButton, &QToolButton::toggled, [ this ]( bool enabled ) {
+        TextLayer *text( qobject_cast<TextLayer *>( this->currentLayer()));
+        if ( text == nullptr )
+            return;
+
+        text->font.setItalic( enabled );
+        text->textItem->setFont( text->font );
+        this->adjustText();
+    } );
+
+    // underline lambda
+    this->connect( this->ui->underlineButton, &QToolButton::toggled, [ this ]( bool enabled ) {
+        TextLayer *text( qobject_cast<TextLayer *>( this->currentLayer()));
+        if ( text == nullptr )
+            return;
+
+        text->font.setUnderline( enabled );
+        text->textItem->setFont( text->font );
+        this->adjustText();
+    } );
+
+    // font lambda
+    this->connect( this->ui->fontCombo, &QFontComboBox::currentFontChanged, [ this ]( const QFont &font ) {
+        TextLayer *text( qobject_cast<TextLayer *>( this->currentLayer()));
+        if ( text == nullptr )
+            return;
+
+        text->font.setFamily( font.family());
+        text->textItem->setFont( text->font );
+        this->adjustText();
+    } );
+}
+
+/**
+ * @brief Designer::setupShape
+ */
+void Designer::setupShape() {
+    this->ui->ellipseSizelSlider->setValue( this->ui->ellipseSizelSlider->value());
+    this->ui->penSizeSlider->setValue( this->ui->penSizeSlider->value());
+
+    // brush colour picker lambda
+    this->connect( this->ui->brushColourButton, &QPushButton::pressed, [ this ] () {
+        ShapeLayer *shape( qobject_cast<ShapeLayer *>( this->currentLayer()));
+        if ( shape == nullptr )
+            return;
+
+        QColor colour( QColorDialog::getColor( shape->brush.color(), this ));
+        if ( !colour.isValid())
+            return;
+
+        this->colourChanged( BrushTarget, colour );
+    } );
+
+    // pen colour picker lambda
+    this->connect( this->ui->penColourButton, &QPushButton::pressed, [ this ] () {
+        ShapeLayer *shape( qobject_cast<ShapeLayer *>( this->currentLayer()));
+        if ( shape == nullptr )
+            return;
+
+        QColor colour( QColorDialog::getColor( shape->pen.color(), this ));
+        if ( !colour.isValid())
+            return;
+
+        this->colourChanged( PenTarget, colour );
+    } );
+}
+
+/**
+ * @brief Designer::addLayer
+ */
+void Designer::addLayer( DesignerLayer *layer ) {
+    if ( layer == nullptr )
+        return;
+
+    this->layers << layer;
+
+    const QModelIndex index( this->model->index( this->layers.indexOf( layer ), 0 ));
+    if ( index.isValid())
+        this->ui->layerView->setCurrentIndex( index );
 }
 
 /**
@@ -166,6 +338,10 @@ Designer::~Designer() {
  * @param value
  */
 void Designer::on_ellipseSizelSlider_valueChanged( int value ) {
+    ShapeLayer *shape( qobject_cast<ShapeLayer *>( this->currentLayer()));
+    if ( shape == nullptr )
+        return;
+
     const qreal factor = static_cast<qreal>( value ) / 100.0;
     const QRectF rect( this->scene->sceneRect());
 
@@ -177,7 +353,13 @@ void Designer::on_ellipseSizelSlider_valueChanged( int value ) {
                    height
                    );
 
-    this->ellipse->setRect( scaled );
+    // TODO: add vertical separately
+    shape->setHorizontalScale( factor );
+
+    if ( shape->shape() == ShapeLayer::Shapes::Ellipse )
+        shape->ellipseItem->setRect( scaled );
+    else if ( shape->shape() == ShapeLayer::Shapes::Rectangle )
+        shape->rectItem->setRect( scaled );
 }
 
 /**
@@ -185,8 +367,16 @@ void Designer::on_ellipseSizelSlider_valueChanged( int value ) {
  * @param value
  */
 void Designer::on_penSizeSlider_valueChanged( int value ) {
-    this->pen.setWidth( value );
-    this->ellipse->setPen( pen );
+    ShapeLayer *shape( qobject_cast<ShapeLayer *>( this->currentLayer()));
+    if ( shape == nullptr )
+        return;
+
+    shape->pen.setWidth( value );
+
+    if ( shape->shape() == ShapeLayer::Shapes::Ellipse )
+        shape->ellipseItem->setPen( shape->pen );
+    else if ( shape->shape() == ShapeLayer::Shapes::Rectangle )
+        shape->rectItem->setPen( shape->pen );
 }
 
 /**
@@ -194,7 +384,11 @@ void Designer::on_penSizeSlider_valueChanged( int value ) {
  * @param text
  */
 void Designer::on_textEdit_textChanged( const QString &text ) {
-    this->text->setPlainText( text );
+    TextLayer *textLayer( qobject_cast<TextLayer *>( this->currentLayer()));
+    if ( textLayer == nullptr )
+        return;
+
+    textLayer->textItem->setPlainText( text );
     this->adjustText();
 }
 
@@ -203,8 +397,12 @@ void Designer::on_textEdit_textChanged( const QString &text ) {
  * @param value
  */
 void Designer::on_pointSizeSlider_valueChanged( int value ) {
-    this->font.setPointSize( value );
-    this->text->setFont( font );
+    TextLayer *text( qobject_cast<TextLayer *>( this->currentLayer()));
+    if ( text == nullptr )
+        return;
+
+    text->font.setPointSize( value );
+    text->textItem->setFont( text->font );
     this->adjustText();
 }
 
@@ -226,9 +424,13 @@ void Designer::on_textYSlider_valueChanged( int ) {
  * @brief Designer::adjustText
  */
 void Designer::adjustText() {
+    TextLayer *text( qobject_cast<TextLayer *>( this->currentLayer()));
+    if ( text == nullptr )
+        return;
+
     QRectF sceneRect( this->scene->sceneRect());
-    QRectF rect( this->text->sceneBoundingRect());
-    this->text->setPos( sceneRect.width() / 2.0 - rect.width() / 2.0 + this->ui->textXSlider->value(),
+    QRectF rect( text->textItem->sceneBoundingRect());
+    text->textItem->setPos( sceneRect.width() / 2.0 - rect.width() / 2.0 + this->ui->textXSlider->value(),
                         sceneRect.height() / 2.0 - rect.height() / 2.0 + this->ui->textYSlider->value());
 }
 

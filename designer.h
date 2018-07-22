@@ -23,7 +23,9 @@
 //
 #include <QGraphicsEllipseItem>
 #include <QMainWindow>
+#include <QMenu>
 #include <QPen>
+#include "designerlayer.h"
 
 /**
  * @brief The Ui namespace
@@ -35,7 +37,7 @@ class Designer;
 //
 // classes
 //
-class DesignerLayer;
+//class DesignerLayer;
 class DesignerModel;
 
 /**
@@ -45,6 +47,7 @@ class Designer final : public QMainWindow {
     Q_OBJECT
     Q_ENUMS( ColourTarget )
     Q_DISABLE_COPY( Designer )
+    Q_ENUMS( ToolPages )
 
 public:
     enum ColourTarget {
@@ -54,9 +57,21 @@ public:
         TextTarget
     };
 
+    enum ToolPages {
+        NoPage = -1,
+        Text,
+        Shape
+    };
+
     static Designer *instance() { static Designer *instance = new Designer(); return instance; }
     ~Designer();
     QList<DesignerLayer*> layers;
+
+public slots:
+    void setupLayers();
+    void setupText();
+    void setupShape();
+    void addLayer( DesignerLayer *layer );
 
 private slots:
     void on_ellipseSizelSlider_valueChanged( int value );
@@ -72,16 +87,9 @@ private slots:
 private:
     explicit Designer( QWidget *parent = nullptr );
     Ui::Designer *ui;
-
-    /* remove me */
-    QGraphicsEllipseItem *ellipse;
-    QGraphicsTextItem *text;
     QGraphicsScene *scene;
-    QPen pen;
-    QBrush brush;
-    QFont font;
-    /* end */
-
     DesignerModel *model;
     QMap<int, DesignerLayer*> layerMap;
+    DesignerLayer *currentLayer() const;
+    QMenu *addMenu;
 };

@@ -312,6 +312,8 @@ void MainWindow::initialize() {
 
     // icon maker lambda
     this->connect( this->ui->makeButton, &QPushButton::clicked, [ this ]() {
+        Designer::instance();
+        Designer::instance()->setupLayers();
         Designer::instance()->show();
     } );
 

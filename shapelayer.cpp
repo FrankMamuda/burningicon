@@ -19,24 +19,32 @@
 //
 // includes
 //
-#include "textlayer.h"
-
-// TODO: add alignment
+#include "shapelayer.h"
 
 /**
- * @brief TextLayer::TextLayer
+ * @brief ShapeLayer::ShapeLayer
  */
-TextLayer::TextLayer( QGraphicsScene *scene, const QString &text ) :
+ShapeLayer::ShapeLayer( QGraphicsScene *scene, Shapes shape ) :
     DesignerLayer( scene ),
-    textItem( nullptr )
+    ellipseItem( nullptr ),
+    rectItem( nullptr ),
+    m_shape( shape ),
+    m_horizontalScale( 0.9 ),
+    m_verticalScale( 0.9 )
 {
 
     if ( this->scene() == nullptr )
         return;
 
-    DesignerLayer::setName( this->tr( "Text layer" ));
-    DesignerLayer::setType( DesignerLayer::Types::Text );
-    this->font.setPointSize( 96 );
-    this->textItem = this->scene()->addText( text );
-    this->textItem->setFont( this->font );
+    this->pen = QPen( Qt::black );
+    this->brush = QBrush( Qt::darkGreen );
+    this->pen.setWidth( 16 );
+
+    DesignerLayer::setName( this->tr( "Shape layer" ));
+    DesignerLayer::setType( DesignerLayer::Types::Shape );
+
+    if ( shape == ShapeLayer::Shapes::Ellipse )
+        this->ellipseItem = this->scene()->addEllipse( this->scene()->sceneRect(), this->pen, this->brush );
+    else if ( shape == ShapeLayer::Shapes::Rectangle )
+        this->rectItem = this->scene()->addRect( this->scene()->sceneRect(), this->pen, this->brush );
 }

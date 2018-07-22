@@ -36,7 +36,8 @@ SOURCES += \
     designer.cpp \
     designerlayer.cpp \
     imagelayer.cpp \
-    designermodel.cpp
+    designermodel.cpp \
+    shapelayer.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -55,7 +56,8 @@ HEADERS += \
     designer.h \
     designerlayer.h \
     imagelayer.h \
-    designermodel.h
+    designermodel.h \
+    shapelayer.h
 
 FORMS += \
         mainwindow.ui \

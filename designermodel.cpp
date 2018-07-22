@@ -32,7 +32,7 @@ int DesignerModel::rowCount( const QModelIndex &parent ) const {
     if ( parent.isValid())
         return 0;
 
-    return 0;// MainWindow::instance()->layers.count();
+    return Designer::instance()->layers.count();
 }
 
 /**
@@ -45,7 +45,6 @@ QVariant DesignerModel::data( const QModelIndex &index, int role ) const {
     if ( !index.isValid())
         return QVariant();
 
-    Q_UNUSED( role )
     if ( role == Qt::DisplayRole ) {
         return Designer::instance()->layers.at( index.row())->name();
     }

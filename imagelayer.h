@@ -28,6 +28,7 @@
  * @brief The ImageLayer class
  */
 class ImageLayer final : public DesignerLayer {
+    Q_OBJECT
     friend class Designer;
 
 public:

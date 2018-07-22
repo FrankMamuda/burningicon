@@ -29,6 +29,7 @@
  * @brief The ImageLayer class
  */
 class TextLayer final : public DesignerLayer {
+    Q_OBJECT
     friend class Designer;
 
 public:
