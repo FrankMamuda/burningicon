@@ -26,7 +26,11 @@
  */
 ImageLayer::ImageLayer( QGraphicsScene *scene, const QPixmap &pixmap ) :
     DesignerLayer( scene ),
-    pixmapItem( nullptr )
+    pixmapItem( nullptr ),
+    m_horizontalOffset( 0 ),
+    m_verticalOffset( 0 ),
+    m_horizontalScale( 0.9 ),
+    m_verticalScale( 0.9 )
 {
 
     if ( this->scene() == nullptr )

@@ -33,7 +33,19 @@ class ImageLayer final : public DesignerLayer {
 
 public:
     ImageLayer( QGraphicsScene *scene = nullptr, const QPixmap &pixmap = QPixmap());
+    int horizontalOffset() const { return this->m_horizontalOffset; }
+    int verticalOffset() const { return this->m_verticalOffset; }
+
+public slots:
+    void setHorizontalOffset( int offset ) { this->m_horizontalOffset = offset; }
+    void setVerticalOffset( int offset ) { this->m_verticalOffset = offset; }
+    void setHorizontalScale( qreal scale ) { this->m_horizontalScale = scale; }
+    void setVerticalScale( qreal scale ) { this->m_verticalScale = scale; }
 
 private:
     QGraphicsPixmapItem *pixmapItem;
+    int m_horizontalOffset;
+    int m_verticalOffset;
+    qreal m_horizontalScale;
+    qreal m_verticalScale;
 };

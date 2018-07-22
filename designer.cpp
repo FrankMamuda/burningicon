@@ -32,6 +32,7 @@
 #include "shapelayer.h"
 #include "textlayer.h"
 #include <QDebug>
+#include "imagelayer.h"
 #include "variable.h"
 #include <QMessageBox>
 
@@ -189,6 +190,17 @@ void Designer::setupLayers() {
             this->colourChanged( BrushTarget, shape->brush.color());
             this->ui->ellipseSizeSlider->setValue( static_cast<int>( shape->m_horizontalScale * 100 ));
             this->ui->penSizeSlider->setValue( shape->pen.width());
+        } else if ( this->layers.at( index.row())->type() == DesignerLayer::Types::Image ) {
+            this->ui->stackedWidget->setCurrentIndex( Image );
+
+            ImageLayer *image( qobject_cast<ImageLayer *>( this->currentLayer()));
+            if ( image == nullptr )
+                return;
+
+            this->ui->imageScaleSlider->setValue( static_cast<int>( image->m_horizontalScale * 100 ));
+            this->ui->imageXSlider->setValue( image->horizontalOffset());
+            this->ui->imageYSlider->setValue( image->verticalOffset());
+            this->adjustImage();
         } else
             this->ui->toolsDock->setEnabled( false );
     } );
@@ -218,52 +230,55 @@ void Designer::setupLayers() {
     } );
     this->addMenu->addAction( this->tr( "Add ellipse item" ), [ this ]() { this->addLayer( new ShapeLayer( this->scene, ShapeLayer::Shapes::Ellipse )); } );
     this->addMenu->addAction( this->tr( "Add rectangle item" ), [ this ]() { this->addLayer( new ShapeLayer( this->scene, ShapeLayer::Shapes::Rectangle )); } );
-    /*this->addMenu->addAction( this->tr( "Add image item" ), [ this ]() {
-            QPixmap pixmap;
-            bool ok;
-            QString path( Variable::instance()->string( "previousOpenPath" ));
-            const QDir dir( path );
+    this->addMenu->addAction( this->tr( "Add image item" ), [ this ]() {
+        QPixmap pixmap;
+        bool ok;
+        QString path( Variable::instance()->string( "previousOpenPath" ));
+        const QDir dir( path );
 
-            // check previous path
-            if ( path.isEmpty() || !dir.exists())
-                path = QDir::currentPath();
+        // check previous path
+        if ( path.isEmpty() || !dir.exists())
+            path = QDir::currentPath();
 
-            // failure by default
-            ok = false;
+        // failure by default
+        ok = false;
 
-            // get fileName
-            const QString fileName( QFileDialog::getOpenFileName( this, this->tr( "Open Image" ),
-                                                                  path,
-                                                                  this->tr( "Image Files (*.png *.jpg *.bmp *.svg)" )));
+        // get fileName
+        const QString fileName( QFileDialog::getOpenFileName( this, this->tr( "Open Image" ),
+                                                              path,
+                                                              this->tr( "Image Files (*.png *.jpg *.bmp *.svg)" )));
 
-            if ( fileName.isEmpty())
-                return pixmap;
+        if ( fileName.isEmpty())
+            return;
 
-            // pre-render svs to maximum scale (ignores aspect ratio)
-            if ( fileName.endsWith( ".svg" )) {
-                QIcon icon;
+        // pre-render svs to maximum scale (ignores aspect ratio)
+        if ( fileName.endsWith( ".svg" )) {
+            QIcon icon;
 
-                icon.addFile( fileName, QSize( Ui::MaximumScale, Ui::MaximumScale ));
-                if ( icon.isNull()) {
-                    QMessageBox::critical( this, this->tr( "Image selector" ),
-                                           this->tr( "Invalid svg. Try another one." ),
-                                           QMessageBox::Ok );
-                }
-
-                pixmap = icon.pixmap( Ui::MaximumScale, Ui::MaximumScale );
-            } else {
-                // validate pixmap
-                if ( !pixmap.load( fileName ))
-                    QMessageBox::critical( this, this->tr( "Image selector" ),
-                                           this->tr( "Invalid image. Try another image." ),
-                                           QMessageBox::Ok );
+            icon.addFile( fileName, QSize( Ui::MaximumScale, Ui::MaximumScale ));
+            if ( icon.isNull()) {
+                QMessageBox::critical( this, this->tr( "Image selector" ),
+                                       this->tr( "Invalid svg. Try another one." ),
+                                       QMessageBox::Ok );
             }
 
-            // check if pixmap is valid
-            if ( !pixmap.isNull())
-                ok = true;
+            pixmap = icon.pixmap( Ui::MaximumScale, Ui::MaximumScale );
+        } else {
+            // validate pixmap
+            if ( !pixmap.load( fileName ))
+                QMessageBox::critical( this, this->tr( "Image selector" ),
+                                       this->tr( "Invalid image. Try another image." ),
+                                       QMessageBox::Ok );
+        }
 
-    } );*/
+        // check if pixmap is valid
+        if ( !pixmap.isNull())
+            ok = true;
+
+        // finally add layer
+        if ( ok )
+            this->addLayer( new ImageLayer( this->scene, pixmap ));
+    } );
 
     this->connect( this->ui->addButton, &QToolButton::clicked, [ this ]() {
         this->addMenu->exec( QCursor::pos());
@@ -286,7 +301,6 @@ void Designer::setupLayers() {
             this->model->resetModel();
         }
     } );
-
 }
 
 /**
@@ -523,4 +537,51 @@ void Designer::on_exportButton_clicked() {
     this->scene->setBackgroundBrush( background );
 
     this->close();
+}
+
+/**
+ * @brief Designer::on_imageScaleSlider_valueChanged
+ * @param value
+ */
+void Designer::on_imageScaleSlider_valueChanged( int ) {
+    this->adjustImage();
+}
+
+/**
+ * @brief Designer::on_imageXSlider_valueChanged
+ */
+void Designer::on_imageXSlider_valueChanged( int ) {
+    this->adjustImage();
+}
+
+/**
+ * @brief Designer::on_imageYSlider_valueChanged
+ * @param value
+ */
+void Designer::on_imageYSlider_valueChanged( int ) {
+    this->adjustImage();
+}
+
+/**
+ * @brief Designer::adjustImage
+ */
+void Designer::adjustImage() {
+    ImageLayer *image( qobject_cast<ImageLayer *>( this->currentLayer()));
+    if ( image == nullptr )
+        return;
+
+    const qreal factor = static_cast<qreal>( this->ui->imageScaleSlider->value()) / 100.0;
+
+    // TODO: add vertical separately
+    image->setHorizontalScale( factor );
+    image->pixmapItem->setScale( factor );
+    image->setHorizontalOffset( this->ui->imageXSlider->value());
+    image->setVerticalOffset( this->ui->imageYSlider->value());
+
+    //image->pixmapItem->
+    const QRectF rect( image->pixmapItem->boundingRect());
+    const QRectF sceneRect( this->scene->sceneRect());
+
+    image->pixmapItem->setPos( sceneRect.width() / 2.0 - rect.width() * factor / 2.0 + this->ui->imageXSlider->value(),
+                            sceneRect.height() / 2.0 - rect.height() * factor / 2.0 + this->ui->imageYSlider->value());
 }

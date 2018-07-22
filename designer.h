@@ -60,7 +60,8 @@ public:
     enum ToolPages {
         NoPage = -1,
         Text,
-        Shape
+        Shape,
+        Image
     };
 
     static Designer *instance() { static Designer *instance = new Designer(); return instance; }
@@ -83,6 +84,10 @@ private slots:
     void on_textYSlider_valueChanged( int value );
     void adjustText();
     void on_exportButton_clicked();
+    void on_imageScaleSlider_valueChanged( int );
+    void on_imageXSlider_valueChanged( int );
+    void on_imageYSlider_valueChanged( int );
+    void adjustImage();
 
 private:
     explicit Designer( QWidget *parent = nullptr );

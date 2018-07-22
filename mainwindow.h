@@ -38,15 +38,9 @@ namespace Ui {
 class MainWindow;
 const static QList<int> DefaultScales = QList<int>() << 16 << 32 << 48 << 256;
 const static QString AppName( QT_TR_NOOP_UTF8( "BurningIcon" ));
-#ifndef Q_CC_MSVC
-constexpr int __attribute__((unused)) MinimumScale = 4;
-constexpr int __attribute__((unused)) ThresholdScale = 256;
-constexpr int __attribute__((unused)) MaximumScale = 512;
-#else
 constexpr int MinimumScale = 4;
 constexpr int ThresholdScale = 256;
 constexpr int MaximumScale = 512;
-#endif
 }
 
 /**
