@@ -74,7 +74,7 @@ public slots:
     void addLayer( DesignerLayer *layer );
 
 private slots:
-    void on_ellipseSizelSlider_valueChanged( int value );
+    void on_ellipseSizeSlider_valueChanged( int value );
     void on_penSizeSlider_valueChanged( int value );
     void colourChanged( ColourTarget target, const QColor &colour );
     void on_textEdit_textChanged( const QString &text );

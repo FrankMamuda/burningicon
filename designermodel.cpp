@@ -47,6 +47,9 @@ QVariant DesignerModel::data( const QModelIndex &index, int role ) const {
 
     if ( role == Qt::DisplayRole ) {
         return Designer::instance()->layers.at( index.row())->name();
+    } else if ( role == Qt::DecorationRole ) {
+        if ( Designer::instance()->layers.at( index.row())->type() == DesignerLayer::Types::Text )
+            return this->textIcon;
     }
 
     return QVariant();

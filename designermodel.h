@@ -22,6 +22,7 @@
 // includes
 //
 #include <QAbstractListModel>
+#include <QIcon>
 #include <QPixmap>
 
 /**
@@ -37,11 +38,14 @@ public:
         ScaleRole = Qt::UserRole
     };
 
-    explicit DesignerModel( QObject *parent = nullptr ) : QAbstractListModel( parent ) {}
+    explicit DesignerModel( QObject *parent = nullptr ) : QAbstractListModel( parent ) { this->textIcon = QIcon( ":/icons/text" ); }
     ~DesignerModel() = default;
     int rowCount( const QModelIndex &parent = QModelIndex()) const override;
     QVariant data( const QModelIndex &index, int role = Qt::DisplayRole ) const override;
 
 public slots:
     void resetModel();
+
+private:
+    QIcon textIcon;
 };

@@ -34,7 +34,6 @@ SOURCES += \
     settings.cpp \
     textlayer.cpp \
     designer.cpp \
-    designerlayer.cpp \
     imagelayer.cpp \
     designermodel.cpp \
     shapelayer.cpp

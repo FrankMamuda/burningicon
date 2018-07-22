@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>616</width>
+    <width>685</width>
     <height>304</height>
    </rect>
   </property>
@@ -165,7 +165,7 @@
              </widget>
             </item>
             <item row="3" column="1">
-             <widget class="QSlider" name="textXSlider">
+             <widget class="Slider" name="textXSlider">
               <property name="minimum">
                <number>-64</number>
               </property>
@@ -185,7 +185,7 @@
              </widget>
             </item>
             <item row="4" column="1">
-             <widget class="QSlider" name="textYSlider">
+             <widget class="Slider" name="textYSlider">
               <property name="minimum">
                <number>-64</number>
               </property>
@@ -300,12 +300,12 @@
               <item>
                <widget class="QLabel" name="ellipseSizeLabel">
                 <property name="text">
-                 <string>Ellipse size (%)</string>
+                 <string>Scale (%)</string>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="Slider" name="ellipseSizelSlider">
+               <widget class="Slider" name="ellipseSizeSlider">
                 <property name="minimum">
                  <number>10</number>
                 </property>

@@ -312,10 +312,12 @@ void MainWindow::initialize() {
 
     // icon maker lambda
     this->connect( this->ui->makeButton, &QPushButton::clicked, [ this ]() {
-        Designer::instance();
-        Designer::instance()->setupLayers();
         Designer::instance()->show();
     } );
+
+    // initialize icon designer
+    Designer::instance();
+    Designer::instance()->setupLayers();
 
     // add to garbage man
     GarbageMan::instance()->add( this );

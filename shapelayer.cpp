@@ -40,11 +40,15 @@ ShapeLayer::ShapeLayer( QGraphicsScene *scene, Shapes shape ) :
     this->brush = QBrush( Qt::darkGreen );
     this->pen.setWidth( 16 );
 
-    DesignerLayer::setName( this->tr( "Shape layer" ));
     DesignerLayer::setType( DesignerLayer::Types::Shape );
 
-    if ( shape == ShapeLayer::Shapes::Ellipse )
+    if ( shape == ShapeLayer::Shapes::Ellipse ) {
         this->ellipseItem = this->scene()->addEllipse( this->scene()->sceneRect(), this->pen, this->brush );
-    else if ( shape == ShapeLayer::Shapes::Rectangle )
+        DesignerLayer::setName( this->tr( "Ellipse" ));
+     } else if ( shape == ShapeLayer::Shapes::Rectangle ) {
         this->rectItem = this->scene()->addRect( this->scene()->sceneRect(), this->pen, this->brush );
+        DesignerLayer::setName( this->tr( "Rectangle" ));
+    } else {
+        DesignerLayer::setName( this->tr( "Shape layer" ));
+    }
 }

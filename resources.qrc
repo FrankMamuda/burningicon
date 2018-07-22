@@ -15,5 +15,6 @@
         <file alias="down">icons/down.png</file>
         <file alias="edit">icons/edit.png</file>
         <file alias="up">icons/up.png</file>
+        <file alias="text">icons/text.png</file>
     </qresource>
 </RCC>

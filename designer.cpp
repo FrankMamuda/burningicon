@@ -32,6 +32,8 @@
 #include "shapelayer.h"
 #include "textlayer.h"
 #include <QDebug>
+#include "variable.h"
+#include <QMessageBox>
 
 /**
  * @brief Designer::Designer
@@ -165,10 +167,17 @@ void Designer::setupLayers() {
                 return;
 
             this->ui->textEdit->setText( text->textItem->toPlainText());
-            //this->on_pointSizeSlider_valueChanged( text->font.pointSize());
-            this->ui->penSizeSlider->setValue( text->font.pointSize());
-            this->colourChanged( TextTarget, QColor( Qt::white ));
+            this->ui->pointSizeSlider->setValue( text->font.pointSize());
+            this->colourChanged( TextTarget, text->textItem->defaultTextColor());
             this->ui->fontCombo->setCurrentFont( text->font );
+            this->ui->textXSlider->setValue( text->horizontalOffset());
+            this->ui->textYSlider->setValue( text->verticalOffset());
+            this->ui->boldButton->setChecked( text->font.bold());
+            this->ui->italicButton->setChecked( text->font.italic());
+            this->ui->underlineButton->setChecked( text->font.underline());
+            this->ui->fontCombo->setCurrentFont( text->font );
+
+            this->adjustText();
         } else if ( this->layers.at( index.row())->type() == DesignerLayer::Types::Shape ) {
             this->ui->stackedWidget->setCurrentIndex( Shape );
 
@@ -178,8 +187,8 @@ void Designer::setupLayers() {
 
             this->colourChanged( PenTarget, shape->pen.color());
             this->colourChanged( BrushTarget, shape->brush.color());
-            //this->on_ellipseSizelSlider_valueChanged( static_cast<int>( shape->m_horizontalScale * 100 ));
-            this->ui->ellipseSizelSlider->setValue( static_cast<int>( shape->m_horizontalScale * 100 ));
+            this->ui->ellipseSizeSlider->setValue( static_cast<int>( shape->m_horizontalScale * 100 ));
+            this->ui->penSizeSlider->setValue( shape->pen.width());
         } else
             this->ui->toolsDock->setEnabled( false );
     } );
@@ -196,9 +205,66 @@ void Designer::setupLayers() {
     // add layer lambda
     // TODO: disconnect me?
     // TODO: button tests
-    this->addMenu->addAction( this->tr( "Add text item" ), [ this ]() { this->addLayer( new TextLayer( this->scene, "Aa" )); } );
+    this->addMenu->addAction( this->tr( "Add text item" ), [ this ]() {
+        bool ok;
+        const QString name( QInputDialog::getText( this, this->tr( "Add text layer" ), this->tr( "Name:" ), QLineEdit::Normal, this->tr( "Aa" ), &ok ));
+
+        if ( ok && !name.isEmpty()) {
+            TextLayer *text( new TextLayer( this->scene, name ));
+
+            text->setName( name );
+            this->addLayer( text );
+        }
+    } );
     this->addMenu->addAction( this->tr( "Add ellipse item" ), [ this ]() { this->addLayer( new ShapeLayer( this->scene, ShapeLayer::Shapes::Ellipse )); } );
     this->addMenu->addAction( this->tr( "Add rectangle item" ), [ this ]() { this->addLayer( new ShapeLayer( this->scene, ShapeLayer::Shapes::Rectangle )); } );
+    /*this->addMenu->addAction( this->tr( "Add image item" ), [ this ]() {
+            QPixmap pixmap;
+            bool ok;
+            QString path( Variable::instance()->string( "previousOpenPath" ));
+            const QDir dir( path );
+
+            // check previous path
+            if ( path.isEmpty() || !dir.exists())
+                path = QDir::currentPath();
+
+            // failure by default
+            ok = false;
+
+            // get fileName
+            const QString fileName( QFileDialog::getOpenFileName( this, this->tr( "Open Image" ),
+                                                                  path,
+                                                                  this->tr( "Image Files (*.png *.jpg *.bmp *.svg)" )));
+
+            if ( fileName.isEmpty())
+                return pixmap;
+
+            // pre-render svs to maximum scale (ignores aspect ratio)
+            if ( fileName.endsWith( ".svg" )) {
+                QIcon icon;
+
+                icon.addFile( fileName, QSize( Ui::MaximumScale, Ui::MaximumScale ));
+                if ( icon.isNull()) {
+                    QMessageBox::critical( this, this->tr( "Image selector" ),
+                                           this->tr( "Invalid svg. Try another one." ),
+                                           QMessageBox::Ok );
+                }
+
+                pixmap = icon.pixmap( Ui::MaximumScale, Ui::MaximumScale );
+            } else {
+                // validate pixmap
+                if ( !pixmap.load( fileName ))
+                    QMessageBox::critical( this, this->tr( "Image selector" ),
+                                           this->tr( "Invalid image. Try another image." ),
+                                           QMessageBox::Ok );
+            }
+
+            // check if pixmap is valid
+            if ( !pixmap.isNull())
+                ok = true;
+
+    } );*/
+
     this->connect( this->ui->addButton, &QToolButton::clicked, [ this ]() {
         this->addMenu->exec( QCursor::pos());
         this->model->resetModel();
@@ -214,7 +280,7 @@ void Designer::setupLayers() {
         if ( this->currentLayer() == nullptr )
             return;
 
-        const QString name = QInputDialog::getText( this, this->tr( "Rename layer" ), this->tr( "New name:" ), QLineEdit::Normal, this->currentLayer()->name(), &ok );
+        const QString name( QInputDialog::getText( this, this->tr( "Rename layer" ), this->tr( "New name:" ), QLineEdit::Normal, this->currentLayer()->name(), &ok ));
         if ( ok && !name.isEmpty()) {
             this->currentLayer()->setName( name );
             this->model->resetModel();
@@ -289,9 +355,6 @@ void Designer::setupText() {
  * @brief Designer::setupShape
  */
 void Designer::setupShape() {
-    this->ui->ellipseSizelSlider->setValue( this->ui->ellipseSizelSlider->value());
-    this->ui->penSizeSlider->setValue( this->ui->penSizeSlider->value());
-
     // brush colour picker lambda
     this->connect( this->ui->brushColourButton, &QPushButton::pressed, [ this ] () {
         ShapeLayer *shape( qobject_cast<ShapeLayer *>( this->currentLayer()));
@@ -334,10 +397,10 @@ void Designer::addLayer( DesignerLayer *layer ) {
 }
 
 /**
- * @brief Designer::on_ellipseSizelSlider_valueChanged
+ * @brief Designer::on_ellipseSizeSlider_valueChanged
  * @param value
  */
-void Designer::on_ellipseSizelSlider_valueChanged( int value ) {
+void Designer::on_ellipseSizeSlider_valueChanged( int value ) {
     ShapeLayer *shape( qobject_cast<ShapeLayer *>( this->currentLayer()));
     if ( shape == nullptr )
         return;
@@ -409,14 +472,24 @@ void Designer::on_pointSizeSlider_valueChanged( int value ) {
 /**
  * @brief Designer::on_textXSlider_valueChanged
  */
-void Designer::on_textXSlider_valueChanged( int ) {
+void Designer::on_textXSlider_valueChanged( int value ) {
+    TextLayer *text( qobject_cast<TextLayer *>( this->currentLayer()));
+    if ( text == nullptr )
+        return;
+
+    text->setHorizontalOffset( value );
     this->adjustText();
 }
 
 /**
  * @brief Designer::on_textYSlider_valueChanged
  */
-void Designer::on_textYSlider_valueChanged( int ) {
+void Designer::on_textYSlider_valueChanged( int value ) {
+    TextLayer *text( qobject_cast<TextLayer *>( this->currentLayer()));
+    if ( text == nullptr )
+        return;
+
+    text->setVerticalOffset( value );
     this->adjustText();
 }
 
@@ -431,7 +504,7 @@ void Designer::adjustText() {
     QRectF sceneRect( this->scene->sceneRect());
     QRectF rect( text->textItem->sceneBoundingRect());
     text->textItem->setPos( sceneRect.width() / 2.0 - rect.width() / 2.0 + this->ui->textXSlider->value(),
-                        sceneRect.height() / 2.0 - rect.height() / 2.0 + this->ui->textYSlider->value());
+                            sceneRect.height() / 2.0 - rect.height() / 2.0 + this->ui->textYSlider->value());
 }
 
 /**

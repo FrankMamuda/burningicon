@@ -40,7 +40,12 @@ public:
         Image,
         Bezel
     };
-    explicit DesignerLayer( QGraphicsScene *s = nullptr );
+
+    /**
+     * @brief DesignerLayer
+     * @param s
+     */
+    explicit DesignerLayer( QGraphicsScene *s = nullptr ) : m_type( DesignerLayer::Types::NoType ), m_scene( s ) {}
     Types type() const { return this->m_type; }
     QGraphicsScene *scene() const { return this->m_scene; }
     QString name() const { return this->m_name; }

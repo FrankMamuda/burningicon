@@ -28,7 +28,9 @@
  */
 TextLayer::TextLayer( QGraphicsScene *scene, const QString &text ) :
     DesignerLayer( scene ),
-    textItem( nullptr )
+    textItem( nullptr ),
+    m_horizontalOffset( 0 ),
+    m_verticalOffset( 0 )
 {
 
     if ( this->scene() == nullptr )
@@ -39,4 +41,5 @@ TextLayer::TextLayer( QGraphicsScene *scene, const QString &text ) :
     this->font.setPointSize( 96 );
     this->textItem = this->scene()->addText( text );
     this->textItem->setFont( this->font );
+    this->textItem->setDefaultTextColor( Qt::white );
 }
