@@ -34,16 +34,9 @@ class TextLayer final : public DesignerLayer {
 
 public:
     TextLayer( QGraphicsScene *scene = nullptr, const QString &text = QString());
-    int horizontalOffset() const { return this->m_horizontalOffset; }
-    int verticalOffset() const { return this->m_verticalOffset; }
-
-public slots:
-    void setHorizontalOffset( int offset ) { this->m_horizontalOffset = offset; }
-    void setVerticalOffset( int offset ) { this->m_verticalOffset = offset; }
+    QGraphicsItem *item() override;
 
 private:
     QGraphicsTextItem *textItem;
     QFont font;
-    int m_horizontalOffset;
-    int m_verticalOffset;
 };

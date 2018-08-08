@@ -42,13 +42,8 @@ public:
     };
 
     ShapeLayer( QGraphicsScene *scene = nullptr, Shapes shape = ShapeLayer::Shapes::Ellipse );
-    qreal horizontalScale() const { return this->m_horizontalScale; }
-    qreal verticalScale() const { return this->m_verticalScale; }
     Shapes shape() const { return this->m_shape; }
-
-public slots:
-    void setHorizontalScale( qreal scale ) { this->m_horizontalScale = scale; }
-    void setVerticalScale( qreal scale ) { this->m_verticalScale = scale; }
+    QGraphicsItem *item() override;
 
 private:
     QGraphicsEllipseItem *ellipseItem;

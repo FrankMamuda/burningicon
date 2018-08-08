@@ -45,10 +45,24 @@ ShapeLayer::ShapeLayer( QGraphicsScene *scene, Shapes shape ) :
     if ( shape == ShapeLayer::Shapes::Ellipse ) {
         this->ellipseItem = this->scene()->addEllipse( this->scene()->sceneRect(), this->pen, this->brush );
         DesignerLayer::setName( this->tr( "Ellipse" ));
-     } else if ( shape == ShapeLayer::Shapes::Rectangle ) {
+    } else if ( shape == ShapeLayer::Shapes::Rectangle ) {
         this->rectItem = this->scene()->addRect( this->scene()->sceneRect(), this->pen, this->brush );
         DesignerLayer::setName( this->tr( "Rectangle" ));
     } else {
         DesignerLayer::setName( this->tr( "Shape layer" ));
     }
+}
+
+/**
+ * @brief ShapeLayer::item
+ * @return
+ */
+QGraphicsItem *ShapeLayer::item() {
+    if ( this->shape() == ShapeLayer::Shapes::Ellipse ) {
+        return dynamic_cast<QGraphicsItem*>( this->ellipseItem );
+    } else if ( this->shape() == ShapeLayer::Shapes::Rectangle ) {
+        return dynamic_cast<QGraphicsItem*>( this->rectItem );
+    }
+
+    return nullptr;
 }

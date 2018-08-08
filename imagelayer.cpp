@@ -26,12 +26,9 @@
  */
 ImageLayer::ImageLayer( QGraphicsScene *scene, const QPixmap &pixmap ) :
     DesignerLayer( scene ),
-    pixmapItem( nullptr ),
-    m_horizontalOffset( 0 ),
-    m_verticalOffset( 0 ),
-    m_horizontalScale( 0.9 ),
-    m_verticalScale( 0.9 )
+    pixmapItem( nullptr )
 {
+    this->setScale( 0.9 );
 
     if ( this->scene() == nullptr )
         return;
@@ -39,4 +36,12 @@ ImageLayer::ImageLayer( QGraphicsScene *scene, const QPixmap &pixmap ) :
     DesignerLayer::setName( this->tr( "Image layer" ));
     DesignerLayer::setType( DesignerLayer::Types::Image );
     this->pixmapItem = this->scene()->addPixmap( pixmap );
+}
+
+/**
+ * @brief ImageLayer::item
+ * @return
+ */
+QGraphicsItem *ImageLayer::item() {
+    return dynamic_cast<QGraphicsItem*>( this->pixmapItem );
 }

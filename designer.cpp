@@ -57,6 +57,50 @@ Designer::Designer( QWidget *parent ) : QMainWindow( parent ), ui( new Ui::Desig
     // setup ui element controls
     this->setupShape();
     this->setupText();
+
+    this->connect( this->ui->opacitySlider, &QSlider::valueChanged, [ this ]( int value ) {
+        if ( this->currentLayer() == nullptr )
+            return;
+
+        if ( this->currentLayer()->item() == nullptr )
+            return;
+
+        this->currentLayer()->item()->setOpacity( static_cast<qreal>( value / 100.0 ));
+        this->currentLayer()->adjust();
+    } );
+
+    this->connect( this->ui->scaleSlider, &QSlider::valueChanged, [ this ]( int value ) {
+        if ( this->currentLayer() == nullptr )
+            return;
+
+        if ( this->currentLayer()->item() == nullptr )
+            return;
+
+        this->currentLayer()->item()->setScale( static_cast<qreal>( value / 100.0 ));
+        this->currentLayer()->adjust();
+    } );
+
+    this->connect( this->ui->horizontalSlider, &QSlider::valueChanged, [ this ]( int value ) {
+        if ( this->currentLayer() == nullptr )
+            return;
+
+        if ( this->currentLayer()->item() == nullptr )
+            return;
+
+        this->currentLayer()->setHorizontalOffset( value );
+        this->currentLayer()->adjust();
+    } );
+
+    this->connect( this->ui->verticalSlider, &QSlider::valueChanged, [ this ]( int value ) {
+        if ( this->currentLayer() == nullptr )
+            return;
+
+        if ( this->currentLayer()->item() == nullptr )
+            return;
+
+        this->currentLayer()->setVerticalOffset( value );
+        this->currentLayer()->adjust();
+    } );
 }
 
 /**
@@ -135,6 +179,10 @@ Designer::~Designer() {
     this->disconnect( this->ui->addButton, SLOT( clicked()));
     this->disconnect( this->ui->removeButton, SLOT( clicked()));
     this->disconnect( this->ui->renameButton, SLOT( clicked()));
+    this->disconnect( this->ui->opacitySlider, SLOT( valueChanged( int )));
+    this->disconnect( this->ui->scaleSlider, SLOT( valueChanged( int )));
+    this->disconnect( this->ui->horizontalSlider, SLOT( valueChanged( int )));
+    this->disconnect( this->ui->verticalSlider, SLOT( valueChanged( int )));
 
     delete this->addMenu;
     delete this->scene;
@@ -171,14 +219,10 @@ void Designer::setupLayers() {
             this->ui->pointSizeSlider->setValue( text->font.pointSize());
             this->colourChanged( TextTarget, text->textItem->defaultTextColor());
             this->ui->fontCombo->setCurrentFont( text->font );
-            this->ui->textXSlider->setValue( text->horizontalOffset());
-            this->ui->textYSlider->setValue( text->verticalOffset());
             this->ui->boldButton->setChecked( text->font.bold());
             this->ui->italicButton->setChecked( text->font.italic());
             this->ui->underlineButton->setChecked( text->font.underline());
             this->ui->fontCombo->setCurrentFont( text->font );
-
-            this->adjustText();
         } else if ( this->layers.at( index.row())->type() == DesignerLayer::Types::Shape ) {
             this->ui->stackedWidget->setCurrentIndex( Shape );
 
@@ -188,21 +232,22 @@ void Designer::setupLayers() {
 
             this->colourChanged( PenTarget, shape->pen.color());
             this->colourChanged( BrushTarget, shape->brush.color());
-            this->ui->ellipseSizeSlider->setValue( static_cast<int>( shape->m_horizontalScale * 100 ));
             this->ui->penSizeSlider->setValue( shape->pen.width());
         } else if ( this->layers.at( index.row())->type() == DesignerLayer::Types::Image ) {
             this->ui->stackedWidget->setCurrentIndex( Image );
-
-            ImageLayer *image( qobject_cast<ImageLayer *>( this->currentLayer()));
-            if ( image == nullptr )
-                return;
-
-            this->ui->imageScaleSlider->setValue( static_cast<int>( image->m_horizontalScale * 100 ));
-            this->ui->imageXSlider->setValue( image->horizontalOffset());
-            this->ui->imageYSlider->setValue( image->verticalOffset());
-            this->adjustImage();
+            //ImageLayer *image( qobject_cast<ImageLayer *>( this->currentLayer()));
+            //if ( image == nullptr )
+            //    return;
         } else
             this->ui->toolsDock->setEnabled( false );
+
+        if ( this->currentLayer()->item() != nullptr ) {
+            this->ui->opacitySlider->setValue( static_cast<int>( this->currentLayer()->item()->opacity() * 100 ));
+            this->ui->scaleSlider->setValue( static_cast<int>( this->currentLayer()->item()->scale() * 100 ));
+            this->ui->horizontalSlider->setValue( this->currentLayer()->horizontalOffset());
+            this->ui->verticalSlider->setValue( this->currentLayer()->verticalOffset());
+            this->currentLayer()->adjust();
+        }
     } );
     this->ui->toolsDock->setEnabled( false );
 
@@ -328,7 +373,7 @@ void Designer::setupText() {
 
         text->font.setBold( enabled );
         text->textItem->setFont( text->font );
-        this->adjustText();
+        text->adjust();
     } );
 
     // italic lambda
@@ -339,7 +384,7 @@ void Designer::setupText() {
 
         text->font.setItalic( enabled );
         text->textItem->setFont( text->font );
-        this->adjustText();
+        text->adjust();
     } );
 
     // underline lambda
@@ -350,7 +395,7 @@ void Designer::setupText() {
 
         text->font.setUnderline( enabled );
         text->textItem->setFont( text->font );
-        this->adjustText();
+        text->adjust();
     } );
 
     // font lambda
@@ -361,7 +406,7 @@ void Designer::setupText() {
 
         text->font.setFamily( font.family());
         text->textItem->setFont( text->font );
-        this->adjustText();
+        text->adjust();
     } );
 }
 
@@ -411,35 +456,6 @@ void Designer::addLayer( DesignerLayer *layer ) {
 }
 
 /**
- * @brief Designer::on_ellipseSizeSlider_valueChanged
- * @param value
- */
-void Designer::on_ellipseSizeSlider_valueChanged( int value ) {
-    ShapeLayer *shape( qobject_cast<ShapeLayer *>( this->currentLayer()));
-    if ( shape == nullptr )
-        return;
-
-    const qreal factor = static_cast<qreal>( value ) / 100.0;
-    const QRectF rect( this->scene->sceneRect());
-
-    qreal width = rect.width() * factor;
-    qreal height = rect.height() * factor;
-    QRectF scaled( rect.width() / 2.0 - width / 2.0,
-                   rect.height() / 2.0 - height / 2.0,
-                   width,
-                   height
-                   );
-
-    // TODO: add vertical separately
-    shape->setHorizontalScale( factor );
-
-    if ( shape->shape() == ShapeLayer::Shapes::Ellipse )
-        shape->ellipseItem->setRect( scaled );
-    else if ( shape->shape() == ShapeLayer::Shapes::Rectangle )
-        shape->rectItem->setRect( scaled );
-}
-
-/**
  * @brief Designer::on_penSizeSlider_valueChanged
  * @param value
  */
@@ -466,7 +482,7 @@ void Designer::on_textEdit_textChanged( const QString &text ) {
         return;
 
     textLayer->textItem->setPlainText( text );
-    this->adjustText();
+    textLayer->adjust();
 }
 
 /**
@@ -474,51 +490,13 @@ void Designer::on_textEdit_textChanged( const QString &text ) {
  * @param value
  */
 void Designer::on_pointSizeSlider_valueChanged( int value ) {
-    TextLayer *text( qobject_cast<TextLayer *>( this->currentLayer()));
-    if ( text == nullptr )
+    TextLayer *textLayer( qobject_cast<TextLayer *>( this->currentLayer()));
+    if ( textLayer == nullptr )
         return;
 
-    text->font.setPointSize( value );
-    text->textItem->setFont( text->font );
-    this->adjustText();
-}
-
-/**
- * @brief Designer::on_textXSlider_valueChanged
- */
-void Designer::on_textXSlider_valueChanged( int value ) {
-    TextLayer *text( qobject_cast<TextLayer *>( this->currentLayer()));
-    if ( text == nullptr )
-        return;
-
-    text->setHorizontalOffset( value );
-    this->adjustText();
-}
-
-/**
- * @brief Designer::on_textYSlider_valueChanged
- */
-void Designer::on_textYSlider_valueChanged( int value ) {
-    TextLayer *text( qobject_cast<TextLayer *>( this->currentLayer()));
-    if ( text == nullptr )
-        return;
-
-    text->setVerticalOffset( value );
-    this->adjustText();
-}
-
-/**
- * @brief Designer::adjustText
- */
-void Designer::adjustText() {
-    TextLayer *text( qobject_cast<TextLayer *>( this->currentLayer()));
-    if ( text == nullptr )
-        return;
-
-    QRectF sceneRect( this->scene->sceneRect());
-    QRectF rect( text->textItem->sceneBoundingRect());
-    text->textItem->setPos( sceneRect.width() / 2.0 - rect.width() / 2.0 + this->ui->textXSlider->value(),
-                            sceneRect.height() / 2.0 - rect.height() / 2.0 + this->ui->textYSlider->value());
+    textLayer->font.setPointSize( value );
+    textLayer->textItem->setFont( textLayer->font );
+    textLayer->adjust();
 }
 
 /**
@@ -537,51 +515,4 @@ void Designer::on_exportButton_clicked() {
     this->scene->setBackgroundBrush( background );
 
     this->close();
-}
-
-/**
- * @brief Designer::on_imageScaleSlider_valueChanged
- * @param value
- */
-void Designer::on_imageScaleSlider_valueChanged( int ) {
-    this->adjustImage();
-}
-
-/**
- * @brief Designer::on_imageXSlider_valueChanged
- */
-void Designer::on_imageXSlider_valueChanged( int ) {
-    this->adjustImage();
-}
-
-/**
- * @brief Designer::on_imageYSlider_valueChanged
- * @param value
- */
-void Designer::on_imageYSlider_valueChanged( int ) {
-    this->adjustImage();
-}
-
-/**
- * @brief Designer::adjustImage
- */
-void Designer::adjustImage() {
-    ImageLayer *image( qobject_cast<ImageLayer *>( this->currentLayer()));
-    if ( image == nullptr )
-        return;
-
-    const qreal factor = static_cast<qreal>( this->ui->imageScaleSlider->value()) / 100.0;
-
-    // TODO: add vertical separately
-    image->setHorizontalScale( factor );
-    image->pixmapItem->setScale( factor );
-    image->setHorizontalOffset( this->ui->imageXSlider->value());
-    image->setVerticalOffset( this->ui->imageYSlider->value());
-
-    //image->pixmapItem->
-    const QRectF rect( image->pixmapItem->boundingRect());
-    const QRectF sceneRect( this->scene->sceneRect());
-
-    image->pixmapItem->setPos( sceneRect.width() / 2.0 - rect.width() * factor / 2.0 + this->ui->imageXSlider->value(),
-                            sceneRect.height() / 2.0 - rect.height() * factor / 2.0 + this->ui->imageYSlider->value());
 }

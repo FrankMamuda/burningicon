@@ -28,9 +28,7 @@
  */
 TextLayer::TextLayer( QGraphicsScene *scene, const QString &text ) :
     DesignerLayer( scene ),
-    textItem( nullptr ),
-    m_horizontalOffset( 0 ),
-    m_verticalOffset( 0 )
+    textItem( nullptr )
 {
 
     if ( this->scene() == nullptr )
@@ -42,4 +40,12 @@ TextLayer::TextLayer( QGraphicsScene *scene, const QString &text ) :
     this->textItem = this->scene()->addText( text );
     this->textItem->setFont( this->font );
     this->textItem->setDefaultTextColor( Qt::white );
+}
+
+/**
+ * @brief TextLayer::item
+ * @return
+ */
+QGraphicsItem *TextLayer::item() {
+    return dynamic_cast<QGraphicsItem*>( this->textItem );
 }

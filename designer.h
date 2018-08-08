@@ -75,19 +75,11 @@ public slots:
     void addLayer( DesignerLayer *layer );
 
 private slots:
-    void on_ellipseSizeSlider_valueChanged( int value );
     void on_penSizeSlider_valueChanged( int value );
     void colourChanged( ColourTarget target, const QColor &colour );
     void on_textEdit_textChanged( const QString &text );
     void on_pointSizeSlider_valueChanged( int value );
-    void on_textXSlider_valueChanged( int value );
-    void on_textYSlider_valueChanged( int value );
-    void adjustText();
     void on_exportButton_clicked();
-    void on_imageScaleSlider_valueChanged( int );
-    void on_imageXSlider_valueChanged( int );
-    void on_imageYSlider_valueChanged( int );
-    void adjustImage();
 
 private:
     explicit Designer( QWidget *parent = nullptr );
