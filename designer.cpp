@@ -58,49 +58,42 @@ Designer::Designer( QWidget *parent ) : QMainWindow( parent ), ui( new Ui::Desig
     this->setupShape();
     this->setupText();
 
-    this->connect( this->ui->opacitySlider, &QSlider::valueChanged, [ this ]( int value ) {
+    // layer property change lambda
+    auto changeProperty = [ this ]( Properties property, const QVariant &value ) {
         if ( this->currentLayer() == nullptr )
             return;
 
         if ( this->currentLayer()->item() == nullptr )
             return;
 
-        this->currentLayer()->item()->setOpacity( static_cast<qreal>( value / 100.0 ));
+        switch ( property ) {
+        case Opacity:
+            this->currentLayer()->item()->setOpacity( value.toDouble() / 100.0 );
+            break;
+
+        case Scale:
+            this->currentLayer()->setScale( value.toDouble() / 100.0 );
+            break;
+
+        case HorizontalOffset:
+            this->currentLayer()->setHorizontalOffset( value.toInt());
+            break;
+
+        case VerticalOffset:
+            this->currentLayer()->setVerticalOffset( value.toInt());
+            break;
+
+        case NoProperty:
+            return;
+        }
         this->currentLayer()->adjust();
-    } );
+    };
 
-    this->connect( this->ui->scaleSlider, &QSlider::valueChanged, [ this ]( int value ) {
-        if ( this->currentLayer() == nullptr )
-            return;
-
-        if ( this->currentLayer()->item() == nullptr )
-            return;
-
-        this->currentLayer()->item()->setScale( static_cast<qreal>( value / 100.0 ));
-        this->currentLayer()->adjust();
-    } );
-
-    this->connect( this->ui->horizontalSlider, &QSlider::valueChanged, [ this ]( int value ) {
-        if ( this->currentLayer() == nullptr )
-            return;
-
-        if ( this->currentLayer()->item() == nullptr )
-            return;
-
-        this->currentLayer()->setHorizontalOffset( value );
-        this->currentLayer()->adjust();
-    } );
-
-    this->connect( this->ui->verticalSlider, &QSlider::valueChanged, [ this ]( int value ) {
-        if ( this->currentLayer() == nullptr )
-            return;
-
-        if ( this->currentLayer()->item() == nullptr )
-            return;
-
-        this->currentLayer()->setVerticalOffset( value );
-        this->currentLayer()->adjust();
-    } );
+    // property change triggers
+    this->connect( this->ui->opacitySlider, &QSlider::valueChanged, [ this, changeProperty ]( int value ) { changeProperty( Opacity, value ); } );
+    this->connect( this->ui->scaleSlider, &QSlider::valueChanged, [ this, changeProperty ]( int value ) { changeProperty( Scale, value ); } );
+    this->connect( this->ui->horizontalSlider, &QSlider::valueChanged, [ this, changeProperty ]( int value ) { changeProperty( HorizontalOffset, value ); } );
+    this->connect( this->ui->verticalSlider, &QSlider::valueChanged, [ this, changeProperty ]( int value ) { changeProperty( VerticalOffset, value ); } );
 }
 
 /**
@@ -110,8 +103,10 @@ Designer::Designer( QWidget *parent ) : QMainWindow( parent ), ui( new Ui::Desig
 DesignerLayer *Designer::currentLayer() const {
     const QModelIndex index( this->ui->layerView->currentIndex());
 
-    if ( !index.isValid())
+    if ( !index.isValid()) {
+        this->ui->toolsDock->setDisabled( true );
         return nullptr;
+    }
 
     return this->layers.at( index.row());
 }
@@ -243,13 +238,14 @@ void Designer::setupLayers() {
 
         if ( this->currentLayer()->item() != nullptr ) {
             this->ui->opacitySlider->setValue( static_cast<int>( this->currentLayer()->item()->opacity() * 100 ));
-            this->ui->scaleSlider->setValue( static_cast<int>( this->currentLayer()->item()->scale() * 100 ));
+            this->ui->scaleSlider->setValue( static_cast<int>( this->currentLayer()->scale() * 100 ));
             this->ui->horizontalSlider->setValue( this->currentLayer()->horizontalOffset());
             this->ui->verticalSlider->setValue( this->currentLayer()->verticalOffset());
             this->currentLayer()->adjust();
+        } else {
+            this->ui->toolsDock->setEnabled( false );
         }
     } );
-    this->ui->toolsDock->setEnabled( false );
 
     // add demo layers
     // TODO: delete on close
@@ -258,6 +254,7 @@ void Designer::setupLayers() {
 
     // reset model
     this->model->resetModel();
+    this->ui->toolsDock->setEnabled( false );
 
     // add layer lambda
     // TODO: disconnect me?
@@ -307,7 +304,7 @@ void Designer::setupLayers() {
                                        QMessageBox::Ok );
             }
 
-            pixmap = icon.pixmap( Ui::MaximumScale, Ui::MaximumScale );
+            pixmap = icon.pixmap( Ui::ThresholdScale, Ui::ThresholdScale );
         } else {
             // validate pixmap
             if ( !pixmap.load( fileName ))

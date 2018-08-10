@@ -38,7 +38,6 @@ public:
         NoShape = -1,
         Ellipse,
         Rectangle
-        // RoundedRectangle
     };
 
     ShapeLayer( QGraphicsScene *scene = nullptr, Shapes shape = ShapeLayer::Shapes::Ellipse );
@@ -51,6 +50,4 @@ private:
     Shapes m_shape;
     QPen pen;
     QBrush brush;
-    qreal m_horizontalScale;
-    qreal m_verticalScale;
 };

@@ -36,6 +36,7 @@ ImageLayer::ImageLayer( QGraphicsScene *scene, const QPixmap &pixmap ) :
     DesignerLayer::setName( this->tr( "Image layer" ));
     DesignerLayer::setType( DesignerLayer::Types::Image );
     this->pixmapItem = this->scene()->addPixmap( pixmap );
+    this->pixmapItem->setTransformationMode( Qt::SmoothTransformation );
 }
 
 /**

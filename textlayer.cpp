@@ -21,8 +21,6 @@
 //
 #include "textlayer.h"
 
-// TODO: add alignment
-
 /**
  * @brief TextLayer::TextLayer
  */
@@ -36,7 +34,7 @@ TextLayer::TextLayer( QGraphicsScene *scene, const QString &text ) :
 
     DesignerLayer::setName( this->tr( "Text layer" ));
     DesignerLayer::setType( DesignerLayer::Types::Text );
-    this->font.setPointSize( 96 );
+    this->font.setPointSize( TextItem::DefaultPointSize );
     this->textItem = this->scene()->addText( text );
     this->textItem->setFont( this->font );
     this->textItem->setDefaultTextColor( Qt::white );
@@ -48,4 +46,30 @@ TextLayer::TextLayer( QGraphicsScene *scene, const QString &text ) :
  */
 QGraphicsItem *TextLayer::item() {
     return dynamic_cast<QGraphicsItem*>( this->textItem );
+}
+
+/**
+ * @brief TextLayer::setScale
+ * @param scale
+ */
+void TextLayer::setScale( qreal scale ) {
+    if ( this->item() == nullptr )
+        return;
+
+    this->font.setPointSize( qMax( TextItem::MinimumPointSize, static_cast<int>( TextItem::DefaultPointSize * scale )));
+    this->textItem->setFont( this->font );
+}
+
+/**
+ * @brief TextLayer::adjust
+ */
+void TextLayer::adjust() {
+    if ( this->item() == nullptr )
+        return;
+
+    this->item()->setPos(
+                this->scene()->sceneRect().width() / 2.0 -
+                this->item()->sceneBoundingRect().width() / 2.0 + this->horizontalOffset(),
+                this->scene()->sceneRect().height() / 2.0 -
+                this->item()->sceneBoundingRect().height() / 2.0 + this->verticalOffset());
 }

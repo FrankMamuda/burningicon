@@ -26,6 +26,14 @@
 #include <QGraphicsTextItem>
 
 /**
+ * @brief The TextItem namespace
+ */
+namespace TextItem {
+static constexpr int MinimumPointSize = 8;
+static constexpr int DefaultPointSize = 96;
+}
+
+/**
  * @brief The ImageLayer class
  */
 class TextLayer final : public DesignerLayer {
@@ -35,6 +43,10 @@ class TextLayer final : public DesignerLayer {
 public:
     TextLayer( QGraphicsScene *scene = nullptr, const QString &text = QString());
     QGraphicsItem *item() override;
+    void adjust() override;
+
+public slots:
+    void setScale( qreal scale ) override;
 
 private:
     QGraphicsTextItem *textItem;

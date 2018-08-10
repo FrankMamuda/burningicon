@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>685</width>
-    <height>377</height>
+    <height>340</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -88,7 +88,7 @@
      <item>
       <widget class="QStackedWidget" name="stackedWidget">
        <property name="currentIndex">
-        <number>2</number>
+        <number>1</number>
        </property>
        <widget class="QWidget" name="textPage">
         <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -255,25 +255,34 @@
             <item>
              <layout class="QHBoxLayout" name="ellipseSizeLayout">
               <item>
-               <widget class="QLabel" name="ellipseSizeLabel">
+               <widget class="QLabel" name="aspectLabel">
                 <property name="text">
-                 <string>Scale (%)</string>
+                 <string>Aspect ratio</string>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="Slider" name="ellipseSizeSlider">
+               <widget class="Slider" name="aspectSlider">
                 <property name="minimum">
-                 <number>10</number>
+                 <number>-10</number>
                 </property>
                 <property name="maximum">
-                 <number>100</number>
+                 <number>10</number>
+                </property>
+                <property name="pageStep">
+                 <number>1</number>
                 </property>
                 <property name="value">
-                 <number>90</number>
+                 <number>0</number>
                 </property>
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="tickPosition">
+                 <enum>QSlider::TicksBelow</enum>
+                </property>
+                <property name="tickInterval">
+                 <number>5</number>
                 </property>
                </widget>
               </item>
@@ -358,8 +367,26 @@
         </item>
         <item row="2" column="2">
          <widget class="QSlider" name="verticalSlider">
+          <property name="minimum">
+           <number>-256</number>
+          </property>
+          <property name="maximum">
+           <number>256</number>
+          </property>
+          <property name="singleStep">
+           <number>16</number>
+          </property>
+          <property name="pageStep">
+           <number>32</number>
+          </property>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="tickPosition">
+           <enum>QSlider::TicksBelow</enum>
+          </property>
+          <property name="tickInterval">
+           <number>64</number>
           </property>
          </widget>
         </item>
@@ -372,8 +399,26 @@
         </item>
         <item row="1" column="2">
          <widget class="QSlider" name="horizontalSlider">
+          <property name="minimum">
+           <number>-256</number>
+          </property>
+          <property name="maximum">
+           <number>256</number>
+          </property>
+          <property name="singleStep">
+           <number>16</number>
+          </property>
+          <property name="pageStep">
+           <number>32</number>
+          </property>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="tickPosition">
+           <enum>QSlider::TicksBelow</enum>
+          </property>
+          <property name="tickInterval">
+           <number>64</number>
           </property>
          </widget>
         </item>

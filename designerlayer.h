@@ -78,11 +78,8 @@ public:
         if ( this->item() == nullptr )
             return;
 
-        QRectF sceneRect( this->scene()->sceneRect());
-        QRectF rect( this->item()->sceneBoundingRect());
-        this->item()->setPos(
-                    sceneRect.width() / 2.0 - rect.width() * this->scale() / 2.0 + this->horizontalOffset(),
-                    sceneRect.height() / 2.0 - rect.height() * this->scale() / 2.0 + this->verticalOffset());
+        this->item()->setTransformOriginPoint( QPointF( this->scene()->sceneRect().width() / 2.0 + this->horizontalOffset(), this->scene()->sceneRect().height() / 2.0 + this->verticalOffset()));
+        this->item()->setPos( QPointF( this->horizontalOffset(), this->verticalOffset()));
     }
 
 public slots:

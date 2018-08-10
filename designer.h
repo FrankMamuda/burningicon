@@ -48,6 +48,7 @@ class Designer final : public QMainWindow {
     Q_ENUMS( ColourTarget )
     Q_DISABLE_COPY( Designer )
     Q_ENUMS( ToolPages )
+    Q_ENUMS( Properties )
 
 public:
     enum ColourTarget {
@@ -62,6 +63,14 @@ public:
         Text,
         Shape,
         Image
+    };
+
+    enum Properties {
+      NoProperty = -1,
+        Opacity,
+        Scale,
+        HorizontalOffset,
+        VerticalOffset
     };
 
     static Designer *instance() { static Designer *instance = new Designer(); return instance; }

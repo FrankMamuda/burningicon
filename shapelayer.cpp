@@ -28,17 +28,15 @@ ShapeLayer::ShapeLayer( QGraphicsScene *scene, Shapes shape ) :
     DesignerLayer( scene ),
     ellipseItem( nullptr ),
     rectItem( nullptr ),
-    m_shape( shape ),
-    m_horizontalScale( 0.9 ),
-    m_verticalScale( 0.9 )
+    m_shape( shape )
 {
-
     if ( this->scene() == nullptr )
         return;
 
     this->pen = QPen( Qt::black );
     this->brush = QBrush( Qt::darkGreen );
     this->pen.setWidth( 16 );
+    this->setScale( 0.9 );
 
     DesignerLayer::setType( DesignerLayer::Types::Shape );
 
