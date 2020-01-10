@@ -40,7 +40,29 @@ const static QList<int> DefaultScales = QList<int>() << 16 << 32 << 48 << 256;
 const static QString AppName( QT_TR_NOOP_UTF8( "BurningIcon" ));
 constexpr int MinimumScale = 4;
 constexpr int ThresholdScale = 256;
-constexpr int MaximumScale = 512;
+constexpr int MaximumScale = 1024;
+
+struct macOSLayer {
+    char code[4];
+    int scale;
+    bool doubleScale;
+    macOSLayer( const char *c, int scale, bool doubleScale = false ) : scale( scale ), doubleScale( doubleScale ) {
+        strncpy( this->code, c, 4 );
+    }
+};
+
+static const QList<macOSLayer> macOSLayers = QList<macOSLayer>() <<
+                                                                    macOSLayer( "icp4", 16 ) <<
+                                                                    macOSLayer( "icp5", 32 ) <<
+                                                                    macOSLayer( "icp6", 64 ) <<
+                                                                    macOSLayer( "ic07", 128 ) <<
+                                                                    macOSLayer( "ic08", 256 ) <<
+                                                                    macOSLayer( "ic09", 512 ) <<
+                                                                    macOSLayer( "ic10", 1024 ) <<
+                                                                    macOSLayer( "ic11", 32, true ) <<
+                                                                    macOSLayer( "ic12", 64, true ) <<
+                                                                    macOSLayer( "ic13", 256, true ) <<
+                                                                    macOSLayer( "ic14", 512, true );
 }
 
 /**
@@ -70,7 +92,7 @@ public:
 private slots:
     void on_actionExport_triggered();
     void generateLayers( const QList<int> scales = Ui::DefaultScales );
-    void addLayer( int scale, bool resetModel = false );
+    void addLayer( int scale, bool doubleScale = false, bool resetModel = false );
     void overrideLayer( int scale, const QPixmap &pixmap );
     void restoreLayer( int scale );
     void removeLayer( int scale );

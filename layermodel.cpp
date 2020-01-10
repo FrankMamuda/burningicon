@@ -47,7 +47,9 @@ QVariant LayerModel::data( const QModelIndex &index, int role ) const {
 
     if ( role == Qt::DisplayRole ) {
         const int scale = MainWindow::instance()->layers.at( index.row())->scale();
-        return QString( "%1x%1" ).arg( scale );
+        const bool doubleScale = MainWindow::instance()->layers.at( index.row())->isDoubleScale();
+
+        return doubleScale ? QString( "%1x%1@2x" ).arg( scale / 2 ) : QString( "%1x%1" ).arg( scale );
     } else if ( role == Qt::DecorationRole ) {
         return MainWindow::instance()->layers.at( index.row())->pixmap.scaled( 16, 16, Qt::IgnoreAspectRatio, Qt::FastTransformation );
     } else if ( role == ScaleRole ) {

@@ -50,6 +50,7 @@ Settings::Settings( QWidget *parent ) : QDialog( parent ), ui( new Ui::Settings 
                                                      QList<int>() << 16 << 20 << 32 << 40 << 48 << 64 << 256 );
     this->layerTemplates[Windows10] = LayerTemplate( this->tr( "Windows 10" ),
                                                      QList<int>() << 16 << 20 << 24 << 28 << 30 << 31 << 32 << 40 << 42 << 47 << 48 << 56 << 60 << 63 << 84 << 256 );
+    this->layerTemplates[macOS]     = LayerTemplate( this->tr( "macOS" ), QList<int>(), true );
     this->layerTemplates[Custom]    = LayerTemplate( this->tr( "Custom" ),
                                                      customValues );
 
@@ -60,8 +61,11 @@ Settings::Settings( QWidget *parent ) : QDialog( parent ), ui( new Ui::Settings 
     // store current template in a variable
     Variable::instance()->bind( "settings/layerTemplate", this->ui->layerCombo );
 
+    // compression state lambda
+    auto compressionState = [ this ]() { this->ui->compressInteger->setEnabled( this->ui->compressBox->isChecked() && Variable::instance()->isDisabled( "settings/macOS" )); };
+
     // this lambda sets icon scales to an edit box
-    auto displayScales = [ this ]() {
+    auto displayScales = [ this, compressionState ]() {
         const Templates index = static_cast<Templates>( this->ui->layerCombo->currentIndex());
         QString sizes;
         int y = 0;
@@ -73,17 +77,28 @@ Settings::Settings( QWidget *parent ) : QDialog( parent ), ui( new Ui::Settings 
         // get current template
         LayerTemplate layerTemplate = this->layerTemplates[index];
 
-        // make a string of all available scales
-        foreach ( const int size, layerTemplate.scales ) {
-            sizes = sizes.append( "%1%2" ).arg( size ).arg( y == layerTemplate.scales.count() - 1 ? "" : ", " );
-            y++;
+        if ( index == macOS ) {
+            sizes = "16x16, 32x32, 64x64, 128x128, 256x256, 512x512, 1024, 16x16@2x, 32x32@2x, 128x128@2x, 256x256@2x";
+            this->ui->compressBox->setDisabled( true );
+            Variable::instance()->enable( "settings/macOS" );
+        } else {
+            // make a string of all available scales
+            foreach ( const int size, layerTemplate.scales ) {
+                sizes = sizes.append( "%1%2" ).arg( size ).arg( y == layerTemplate.scales.count() - 1 ? "" : ", " );
+                y++;
+            }
+            this->ui->compressBox->setEnabled( true );
+            Variable::instance()->disable( "settings/macOS" );
         }
 
         // set string to edit box
-        this->ui->layerEdit->setText( sizes );
+        this->ui->layerEdit->setText( qAsConst( sizes ));
 
         // disable/enable edit box
         this->ui->layerEdit->setEnabled( index == Custom );
+
+        // hide/show compression integer
+        compressionState();
     };
 
     // update scales on index change
@@ -101,8 +116,7 @@ Settings::Settings( QWidget *parent ) : QDialog( parent ), ui( new Ui::Settings 
     Variable::instance()->bind( "settings/compressThreshold", this->ui->compressInteger );
     Variable::instance()->bind( "settings/compress", this->ui->compressBox );
 
-    // compression state lambda
-    auto compressionState = [ this ]() { this->ui->compressInteger->setEnabled( this->ui->compressBox->isChecked()); };
+    // hide/show compression integer
     this->connect( this->ui->compressBox, &QCheckBox::toggled, compressionState );
     compressionState();
 }

@@ -31,7 +31,7 @@ public:
     /**
      * @brief Layer
      */
-    Layer( const QPixmap& px = QPixmap(), int scale = 0, bool compressed = false ) : m_scale( scale ), m_compressed( compressed ), m_override( false ) {
+    Layer( const QPixmap& px = QPixmap(), int scale = 0, bool compressed = false, bool doubleScale = false ) : m_scale( scale ), m_compressed( compressed ), m_override( false ), m_doubleScale( doubleScale ) {
         if ( !px.isNull())
             this->pixmap = px.scaled( scale, scale, Qt::IgnoreAspectRatio, Qt::SmoothTransformation );
         else
@@ -44,6 +44,7 @@ public:
     int scale() const { return this->m_scale; }
     bool isCompressed() const { return this->m_compressed; }
     bool isOverriden() const { return this->m_override; }
+    bool isDoubleScale() const { return this->m_doubleScale; }
     void setScale( int scale ) { this->m_scale = scale; }
     void setCompressed( bool compressed ) { this->m_compressed = compressed; }
     void setOverriden( bool override = false ) { this->m_override = override; }
@@ -55,4 +56,5 @@ private:
     int m_scale;
     bool m_compressed;
     bool m_override;
+    bool m_doubleScale;
 };

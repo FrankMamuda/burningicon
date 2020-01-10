@@ -37,7 +37,8 @@ class Settings;
 struct LayerTemplate {
     QString name;
     QList<int> scales;
-    LayerTemplate( const QString &n = QString(), QList<int> s = QList<int>()) : name( n ), scales( s ) {}
+    bool macOS = false;
+    LayerTemplate( const QString &n = QString(), QList<int> s = QList<int>(), bool macOS = false ) : name( n ), scales( s ), macOS( macOS ) {}
 };
 
 /**
@@ -53,6 +54,7 @@ public:
         Legacy,
         Windows7,
         Windows10,
+        macOS,
         Custom,
 
         TemplateCount

@@ -132,7 +132,10 @@ void MainWindow::initialize() {
 
     // layer dock button enabler/disabler
     auto buttonTest = [ this ]() {
-        bool valid = this->ui->layerView->currentIndex().isValid();
+        const bool macOS = Variable::instance()->isEnabled( "settings/macOS" );
+        const bool valid = this->ui->layerView->currentIndex().isValid() && !macOS;
+        this->ui->addButton->setEnabled( !macOS );
+        this->ui->repopulateButton->setEnabled( !macOS );
 
         // enable buttons only for valid indexes
         this->ui->removeButton->setEnabled( valid );
@@ -230,7 +233,7 @@ void MainWindow::initialize() {
                 return;
             }
 
-            this->addLayer( scale, true );
+            this->addLayer( scale, false, true );
         }
     } );
 
@@ -311,7 +314,7 @@ void MainWindow::initialize() {
     } );
 
     // icon maker lambda
-    this->connect( this->ui->makeButton, &QPushButton::clicked, [ this ]() {
+    this->connect( this->ui->makeButton, &QPushButton::clicked, []() {
         Designer::instance()->show();
     } );
 
@@ -371,7 +374,8 @@ void MainWindow::on_actionExport_triggered() {
     }
 
     // get fileName
-    QString fileName( QFileDialog::getSaveFileName( this, this->tr( "Save Icon" ), path, this->tr( "Icon Files (*.ico)" )));
+    const bool macOS = Variable::instance()->isEnabled( "settings/macOS" );
+    QString fileName( QFileDialog::getSaveFileName( this, this->tr( "Save Icon" ), path, macOS ? this->tr( "ICNS Files (*.icns)" ) : this->tr( "Icon Files (*.ico)" )));
     if ( fileName.isEmpty())
         return;
 
@@ -379,8 +383,8 @@ void MainWindow::on_actionExport_triggered() {
     QFile file( fileName );
 
     // add extension
-    if ( !fileName.endsWith( ".ico" ))
-        fileName.append( ".ico" );
+    if ( !fileName.endsWith( macOS ? ".icns" : ".ico" ))
+        fileName.append(  macOS ? ".icns" : ".ico" );
 
     if ( file.exists()) {
         // check if file is readable
@@ -422,8 +426,13 @@ void MainWindow::generateLayers( const QList<int> scales ) {
 
     // build unique mipmaps for each scale
     // TODO: use fast downscaling on create and smooth on write
-    foreach ( const int scale, scales )
-        this->addLayer( scale, false );
+    if ( Variable::instance()->isEnabled( "settings/macOS" )) {
+        foreach ( const Ui::macOSLayer &layer, Ui::macOSLayers )
+            this->addLayer( layer.scale, layer.doubleScale, false );
+    } else {
+        foreach ( const int scale, scales )
+            this->addLayer( scale, false );
+    }
 
     this->resetModel();
 }
@@ -432,7 +441,7 @@ void MainWindow::generateLayers( const QList<int> scales ) {
  * @brief MainWindow::generateLayers
  * @param scales
  */
-void MainWindow::addLayer( int scale, bool reset ) {
+void MainWindow::addLayer( int scale, bool doubleScale, bool reset ) {
     bool compress = Variable::instance()->isEnabled( "settings/compress" );
 
     if ( this->scaled.isNull())
@@ -446,7 +455,7 @@ void MainWindow::addLayer( int scale, bool reset ) {
             compress = false;
     }
 
-    Layer *layer( new Layer( this->scaled, scale, compress ));
+    Layer *layer( new Layer( this->scaled, scale, compress, doubleScale ));
     this->layers << layer;
     this->layerMap[scale] = layer;
 

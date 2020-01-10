@@ -42,6 +42,7 @@ int main( int argc, char *argv[] ) {
     Variable::instance()->add( "settings/customTemplate", "16,32,48,64,256" );
     Variable::instance()->add( "settings/compressThreshold", Ui::ThresholdScale );
     Variable::instance()->add( "settings/compress", true );
+    Variable::instance()->add( "settings/macOS", false );
 
     // read configuration
     XMLTools::instance()->read();
