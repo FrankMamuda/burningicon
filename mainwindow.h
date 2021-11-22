@@ -43,12 +43,10 @@ constexpr int ThresholdScale = 256;
 constexpr int MaximumScale = 1024;
 
 struct macOSLayer {
-    char code[4];
+    QString code;
     int scale;
     bool doubleScale;
-    macOSLayer( const char *c, int scale, bool doubleScale = false ) : scale( scale ), doubleScale( doubleScale ) {
-        strncpy( this->code, c, 4 );
-    }
+    macOSLayer( const QString &c, int scale, bool doubleScale = false ) : code( c ), scale( scale ), doubleScale( doubleScale ) {}
 };
 
 static const QList<macOSLayer> macOSLayers = QList<macOSLayer>() <<

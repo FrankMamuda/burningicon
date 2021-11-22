@@ -43,15 +43,15 @@ protected:
      * @param event
      */
     void paintEvent( QPaintEvent* event ) {
-        if ( this->pixmap() != nullptr ) {
+        if ( !this->pixmap().isNull()) {
             QPainter painter( this );
-            const QRect pixmapRect( this->rect().width()  / 2 - qMin( this->width(),  this->pixmap()->width())  / 2,
-                                    this->rect().height() / 2 - qMin( this->height(), this->pixmap()->height()) / 2,
-                                    qMin( this->width(), this->pixmap()->width()),
-                                    qMin( this->height(), this->pixmap()->height()));
+            const QRect pixmapRect( this->rect().width()  / 2 - qMin( this->width(),  this->pixmap().width())  / 2,
+                                    this->rect().height() / 2 - qMin( this->height(), this->pixmap().height()) / 2,
+                                    qMin( this->width(), this->pixmap().width()),
+                                    qMin( this->height(), this->pixmap().height()));
 
             painter.drawTiledPixmap( pixmapRect, this->transparency, QPointF());
-            painter.drawPixmap( pixmapRect, *this->pixmap());
+            painter.drawPixmap( pixmapRect, this->pixmap());
 
             painter.save();
             painter.setPen( Qt::gray );

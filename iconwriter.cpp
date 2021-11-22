@@ -37,9 +37,10 @@ void IconWriter::write( const QString &filename, const QList<Layer*> pixmaps ) {
     // open icon file for writing
     if ( file.open( QIODevice::WriteOnly )) {
         QDataStream out( &file );
-        out.setByteOrder( QDataStream::BigEndian );
 
         if ( Variable::instance()->isEnabled( "settings/macOS" )) {
+            out.setByteOrder( QDataStream::BigEndian );
+
             QByteArray pixmapData;
             QBuffer pixmapBuffer( &pixmapData );
             pixmapBuffer.open( QIODevice::WriteOnly );
@@ -56,9 +57,9 @@ void IconWriter::write( const QString &filename, const QList<Layer*> pixmaps ) {
                 image.save( &buffer, "PNG" );
                 buffer.close();
 
-                pixmapSteam.writeRawData( Ui::macOSLayers.at( y ).code, 4 );
+                pixmapSteam.writeRawData( Ui::macOSLayers.at( y ).code.toUtf8().constData(), 4 );
                 pixmapSteam << static_cast<quint32>( bytes.size() + 8 );
-                pixmapSteam.writeRawData( bytes, bytes.length());
+                pixmapSteam.writeRawData( bytes, static_cast<int>( bytes.length()));
 
                 y++;
             }
@@ -70,9 +71,11 @@ void IconWriter::write( const QString &filename, const QList<Layer*> pixmaps ) {
             out << static_cast<quint8>( 0x6e );
             out << static_cast<quint8>( 0x73 );
             out << static_cast<quint32>( pixmapData.size() + 8 );
-            out.writeRawData( pixmapData.constData(), pixmapData.size());
+            out.writeRawData( pixmapData.constData(), static_cast<int>( pixmapData.size()));
 
         } else {
+            out.setByteOrder( QDataStream::LittleEndian );
+
             IcoHeader header( static_cast<quint16>( pixmaps.count()));
             QPixmap pixmap;
             QList<IcoDirectory> dirs;
@@ -174,7 +177,7 @@ IcoDirectory IconWriter::writeIconData( Layer *layer, QDataStream &out, qint64 p
         QBuffer buffer( &bytes );
         buffer.open( QIODevice::WriteOnly );
         image.save( &buffer, "PNG" );
-        out.writeRawData( bytes, bytes.size());
+        out.writeRawData( bytes, static_cast<int>( bytes.size()));
         imageSize = static_cast<quint32>( bytes.size());
         buffer.close();
     }
